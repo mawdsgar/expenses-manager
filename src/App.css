@@ -1453,6 +1453,24 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .card-title {
+    min-width: 0;
+  }
+
+  .card-header-right {
+    min-width: 0;
+  }
+
+  .savings-card .card-header-right .btn-add {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+    white-space: normal;
+    text-align: center;
+  }
+
   .mobile-only {
     display: block;
   }
