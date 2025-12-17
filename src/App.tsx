@@ -1126,6 +1126,15 @@ function App() {
                     </div>
                   )}
                 </div>
+
+                {/* Mobile inline total expenditure (to match Income card) */}
+                <div className="mobile-inline-summary mobile-only">
+                  <div className="summary-box large red">
+                    <div className="summary-icon">📉</div>
+                    <div className="summary-label">Total Expenditure</div>
+                    <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -1133,12 +1142,6 @@ function App() {
           {/* Mobile summary stack for totals */}
           {!dashboardCollapsed && (
             <div className="mobile-summary-stack mobile-only">
-              <div className="summary-box large red">
-                <div className="summary-icon">📉</div>
-                <div className="summary-label">Total Expenditure</div>
-                <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
-              </div>
-
               <div className={`summary-box alert ${leftToGoOut < 0 ? 'negative' : 'positive'}`}>
                 <div className="summary-icon">⬇️</div>
                 <div className="summary-label">Left to go out</div>
