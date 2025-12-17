@@ -1475,6 +1475,26 @@ body {
     align-items: stretch;
   }
 
+  .date-range {
+    flex-wrap: wrap;
+  }
+
+  .date-range > span:first-child {
+    flex-basis: 100%;
+  }
+
+  .date-range input {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+
+  .date-range .btn-clear-date-range {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
   .bottom-summary {
     display: none;
   }

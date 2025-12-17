@@ -1364,8 +1364,7 @@ function App() {
               <span style={{ color: 'var(--text-muted)' }}>to</span>
               <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
               <button
-                className="btn-control"
-                style={{ marginLeft: '0.5rem' }}
+                className="btn-control btn-clear-date-range"
                 onClick={() => { setFromDate(''); setToDate(''); }}
                 title="Clear date range"
               >
