@@ -206,6 +206,30 @@ body {
   gap: 0.5rem;
 }
 
+/* Savings header: avoid button clipping on narrower desktop widths */
+.savings-card .card-header {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.savings-card .card-title,
+.savings-card .card-header-right {
+  min-width: 0;
+}
+
+.savings-card .card-header-right {
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.savings-card .card-header-right .btn-add {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
 .card-summary-value {
   font-weight: 700;
   color: var(--text);
