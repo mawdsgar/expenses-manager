@@ -968,8 +968,13 @@ function App() {
             </div>
           </div>
           <div className="header-actions">
-            <button className="btn-theme" onClick={toggleTheme} title="Toggle theme">
-              {theme === 'dark' ? '☀️' : '🌙'}
+            <button
+              className="btn-theme"
+              onClick={toggleTheme}
+              title="Toggle theme"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? '☼' : '☾'}
             </button>
           </div>
         </div>
@@ -1202,13 +1207,6 @@ function App() {
                           <span className="account-amount">{formatCurrency(amount)}</span>
                         </div>
                       ))}
-                      <div className="card-footer-summary expenses-footer">
-                        <div className="summary-icon">📉</div>
-                        <div className="summary-footer-text">
-                          <div className="summary-label">Total Expenditure</div>
-                          <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>
