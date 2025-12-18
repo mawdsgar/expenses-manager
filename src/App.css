@@ -367,15 +367,15 @@ body {
 }
 
 .income-item {
-  background: var(--bg-card);
+  background: linear-gradient(145deg, #16a34a 0%, #22c55e 45%, #bbf7d0 100%);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.45rem 0.6rem;
-  transition: all 0.2s;
+  background: linear-gradient(145deg, #b91c1c 0%, #ef4444 45%, #fecaca 100%);
 }
 
 .income-item:hover {
-  border-color: var(--border-light);
+  background: linear-gradient(145deg, #f59e0b 0%, #fbbf24 45%, #fef3c7 100%);
   transform: translateY(-2px);
 }
 
@@ -746,19 +746,19 @@ body {
 }
 
 .income-footer {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(124, 58, 237, 0.12));
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #bbf7d0 100%);
 }
 
 .expenses-footer {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(249, 115, 22, 0.12));
+  background: linear-gradient(135deg, #b91c1c 0%, #ef4444 45%, #fecaca 100%);
 }
 
 .savings-footer {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.12));
+  background: linear-gradient(145deg, #84cc16 0%, #a3e635 45%, #ecfccb 100%);
 }
 
 .cashflow-box {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(34, 211, 238, 0.12));
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 45%, #fef3c7 100%);
   margin-bottom: 0.75rem;
 }
 
