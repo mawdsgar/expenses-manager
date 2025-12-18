@@ -1259,26 +1259,35 @@ function App() {
                       .toLowerCase()
                       .replace(/[^a-z0-9]+/g, '-')
                       .replace(/^-+|-+$/g, '');
-                    const isBarTooSmall = barWidth < 25; // Show % outside bar if less than 25% width
+                    const isBarTooSmall = barWidth < 25; // Show labels outside bar if less than 25% width
                     
                     return (
                       <div key={category} className="category-bar-item">
-                        <div className="category-bar-label">
-                          <span className={`category-badge category-${categoryClass}`}>
-                            {category}
-                          </span>
-                          <span className="category-bar-amount">{formatCurrency(amount)}</span>
-                        </div>
-                        <div className="category-bar-wrapper" style={{ '--bar-width': `${barWidth}%` } as any}>
+                        <div className="category-bar-row">
                           <div className="category-bar-container">
-                            <div 
+                            <div
                               className={`category-bar category-${categoryClass}`}
                               style={{ width: `${barWidth}%` }}
                             >
-                              {!isBarTooSmall && <span className="category-bar-percentage">{percentage}%</span>}
+                              {!isBarTooSmall && (
+                                <div className="category-bar-inner">
+                                  <span className="category-bar-category">{category}</span>
+                                  <span className="category-bar-percentage">{percentage}%</span>
+                                </div>
+                              )}
                             </div>
+
+                            {isBarTooSmall && (
+                              <div className="category-bar-outside" aria-hidden="true">
+                                <span className="category-bar-category-outside">{category}</span>
+                                <span className="category-bar-percentage-outside">{percentage}%</span>
+                              </div>
+                            )}
                           </div>
-                          {isBarTooSmall && <span className="category-bar-percentage-outside">{percentage}%</span>}
+
+                          <div className="category-bar-values">
+                            <span className="category-bar-amount">{formatCurrency(amount)}</span>
+                          </div>
                         </div>
                       </div>
                     );

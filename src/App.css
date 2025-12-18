@@ -1044,24 +1044,16 @@ body {
   gap: 0.5rem;
 }
 
-.category-bar-label {
+.category-bar-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .category-bar-amount {
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--text);
-}
-
-.category-bar-wrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-  gap: 0;
 }
 
 .category-bar-container {
@@ -1077,10 +1069,29 @@ body {
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.75rem;
   transition: width 0.3s ease;
   border-radius: 8px;
+}
+
+.category-bar-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  min-width: 0;
+}
+
+.category-bar-category {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .category-bar-percentage {
@@ -1088,6 +1099,28 @@ body {
   font-weight: 600;
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.category-bar-outside {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  pointer-events: none;
+}
+
+.category-bar-category-outside {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .category-bar-percentage-outside {
@@ -1095,9 +1128,12 @@ body {
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
-  position: absolute;
-  left: var(--bar-width);
-  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.category-bar-values {
+  min-width: 92px;
+  text-align: right;
 }
 
 /* Category bar colors (using full opacity for bars) */
