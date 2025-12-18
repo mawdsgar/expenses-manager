@@ -213,6 +213,15 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.card-header.clickable {
+  cursor: pointer;
+}
+
+.card-header.clickable:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 6px;
+}
+
 .card-header-right {
   display: flex;
   align-items: center;
@@ -900,11 +909,34 @@ body {
   padding: 2rem;
 }
 
+.expense-section.collapsed {
+  padding: 1.25rem 1.5rem;
+}
+
+.expense-section.collapsed .section-header {
+  margin-bottom: 0;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+}
+
+.section-header.clickable {
+  cursor: pointer;
+}
+
+.section-header.clickable:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 6px;
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .section-title {

@@ -77,6 +77,10 @@ function App() {
     setDashboardCollapsed((prev) => !prev);
   };
 
+  const toggleExpensesCollapsed = () => {
+    setExpensesCollapsed((prev) => !prev);
+  };
+
   // Allowances state (saved to localStorage)
   const [allowance1, setAllowance1] = useState(() => {
     const saved = localStorage.getItem('allowance1');
@@ -104,6 +108,14 @@ function App() {
   // Expandable sections state
   const [allowancesExpanded, setAllowancesExpanded] = useState(false);
   const [expensesBreakdownExpanded, setExpensesBreakdownExpanded] = useState(false);
+  const [expensesCollapsed, setExpensesCollapsed] = useState(() => {
+    const saved = localStorage.getItem('expensesCollapsed');
+    if (saved !== null) return saved === 'true';
+    if (typeof window !== 'undefined') {
+      return !window.matchMedia('(min-width: 768px)').matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
     localStorage.setItem('expenses', JSON.stringify(expenses));
@@ -112,6 +124,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('incomes', JSON.stringify(incomes));
   }, [incomes]);
+
+  useEffect(() => {
+    localStorage.setItem('expensesCollapsed', String(expensesCollapsed));
+  }, [expensesCollapsed]);
 
   // Supabase: detect if configured
   const supabaseEnabled = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
@@ -939,7 +955,19 @@ function App() {
         <div className="dashboard-grid">
           {/* Income Card */}
           <div className={`dashboard-card income-card${dashboardCollapsed ? ' collapsed' : ''}`}>
-            <div className="card-header">
+            <div
+              className="card-header clickable"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!dashboardCollapsed}
+              onClick={toggleDashboardCollapsed}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleDashboardCollapsed();
+                }
+              }}
+            >
               <span className="card-title">
                 <span className="card-icon">📊</span>
                 Income
@@ -950,7 +978,10 @@ function App() {
                 ) : (
                   <button
                     className="btn-add"
-                    onClick={() => setShowIncomeModal(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowIncomeModal(true);
+                    }}
                     aria-label="Add income"
                   >
                     +
@@ -958,7 +989,10 @@ function App() {
                 )}
                 <button
                   className="btn-icon btn-collapse"
-                  onClick={toggleDashboardCollapsed}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDashboardCollapsed();
+                  }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
@@ -1029,7 +1063,19 @@ function App() {
 
           {/* Expenses Card */}
           <div className={`dashboard-card expenses-card${dashboardCollapsed ? ' collapsed' : ''}`}>
-            <div className="card-header">
+            <div
+              className="card-header clickable"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!dashboardCollapsed}
+              onClick={toggleDashboardCollapsed}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleDashboardCollapsed();
+                }
+              }}
+            >
               <span className="card-title">
                 <span className="card-icon">📋</span>
                 Expenditure
@@ -1040,7 +1086,10 @@ function App() {
                 ) : null}
                 <button
                   className="btn-icon btn-collapse"
-                  onClick={toggleDashboardCollapsed}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDashboardCollapsed();
+                  }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
@@ -1194,7 +1243,19 @@ function App() {
 
           {/* Spending by Category */}
           <div className={`dashboard-card category-card${dashboardCollapsed ? ' collapsed' : ''}`}>
-            <div className="card-header">
+            <div
+              className="card-header clickable"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!dashboardCollapsed}
+              onClick={toggleDashboardCollapsed}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleDashboardCollapsed();
+                }
+              }}
+            >
               <span className="card-title">
                 <span className="card-icon">🧭</span>
                 Spending by Category
@@ -1205,7 +1266,10 @@ function App() {
                 )}
                 <button
                   className="btn-icon btn-collapse"
-                  onClick={toggleDashboardCollapsed}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDashboardCollapsed();
+                  }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
@@ -1269,7 +1333,19 @@ function App() {
 
           {/* Savings Card */}
           <div className={`dashboard-card savings-card${dashboardCollapsed ? ' collapsed' : ''}`}>
-            <div className="card-header">
+            <div
+              className="card-header clickable"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!dashboardCollapsed}
+              onClick={toggleDashboardCollapsed}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleDashboardCollapsed();
+                }
+              }}
+            >
               <span className="card-title">
                 <span className="card-icon">💰</span>
                 Savings
@@ -1280,7 +1356,10 @@ function App() {
                 ) : (
                   <button
                     className="btn-add"
-                    onClick={() => setShowSavingsModal(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSavingsModal(true);
+                    }}
                     aria-label="Add savings account"
                   >
                     +
@@ -1288,7 +1367,10 @@ function App() {
                 )}
                 <button
                   className="btn-icon btn-collapse"
-                  onClick={toggleDashboardCollapsed}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDashboardCollapsed();
+                  }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
@@ -1362,165 +1444,201 @@ function App() {
         </div>
 
         {/* All Expenses Table */}
-        <div className="expense-section">
-          <div className="section-header">
+        <div className={`expense-section${expensesCollapsed ? ' collapsed' : ''}`}>
+          <div
+            className="section-header clickable"
+            role="button"
+            tabIndex={0}
+            aria-expanded={!expensesCollapsed}
+            aria-controls="all-expenses-content"
+            onClick={toggleExpensesCollapsed}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleExpensesCollapsed();
+              }
+            }}
+          >
             <h2 className="section-title">
               <span>📋</span>
               All Expenses
             </h2>
-            <button
-              className="btn-add"
-              onClick={() => setShowExpenseModal(true)}
-              aria-label="Add expense"
-            >
-              +
-            </button>
-          </div>
-
-          <div className="table-controls">
-            <button className="btn-control" onClick={exportToExcel}>📤 Export</button>
-            <button className="btn-control" onClick={newCycle}>🔄 New Cycle</button>
-            <button className="btn-control" onClick={markAllUnpaid}>☑️ Mark All Unpaid</button>
-            <button className="btn-control" onClick={markAllPaid}>✅ Mark All Paid</button>
-            <div className="date-range">
-              <span style={{ color: 'var(--text-secondary)' }}>📅 Filter by Date Range:</span>
-              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-              <span style={{ color: 'var(--text-muted)' }}>to</span>
-              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            <div className="section-actions">
+              {!expensesCollapsed && (
+                <button
+                  className="btn-add"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExpenseModal(true);
+                  }}
+                  aria-label="Add expense"
+                >
+                  +
+                </button>
+              )}
               <button
-                className="btn-control btn-clear-date-range"
-                onClick={() => { setFromDate(''); setToDate(''); }}
-                title="Clear date range"
+                className="btn-icon btn-collapse"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExpensesCollapsed();
+                }}
+                title={expensesCollapsed ? 'Expand expenses' : 'Collapse expenses'}
+                aria-expanded={!expensesCollapsed}
+                aria-controls="all-expenses-content"
               >
-                ✖️ Clear
+                {expensesCollapsed ? '▼' : '▲'}
               </button>
             </div>
           </div>
 
-          {expenses.length === 0 ? (
-            <div className="empty-state">
-              <p>No expenses yet. Add your first expense above!</p>
-            </div>
-          ) : (
-            <table className="expense-table">
-              <thead>
-                <tr>
-                  <th
-                    onClick={() => handleSort('paid')}
-                    className="sortable"
-                    title="Sort by Paid"
+          {!expensesCollapsed && (
+            <div id="all-expenses-content">
+              <div className="table-controls">
+                <button className="btn-control" onClick={exportToExcel}>📤 Export</button>
+                <button className="btn-control" onClick={newCycle}>🔄 New Cycle</button>
+                <button className="btn-control" onClick={markAllUnpaid}>☑️ Mark All Unpaid</button>
+                <button className="btn-control" onClick={markAllPaid}>✅ Mark All Paid</button>
+                <div className="date-range">
+                  <span style={{ color: 'var(--text-secondary)' }}>📅 Filter by Date Range:</span>
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+                  <span style={{ color: 'var(--text-muted)' }}>to</span>
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                  <button
+                    className="btn-control btn-clear-date-range"
+                    onClick={() => { setFromDate(''); setToDate(''); }}
+                    title="Clear date range"
                   >
-                    Paid {renderSortIcon('paid')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('payee')}
-                    className="sortable"
-                    title="Sort by Payee"
-                  >
-                    Payee {renderSortIcon('payee')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('amount')}
-                    className="sortable"
-                    title="Sort by Amount"
-                  >
-                    Amount {renderSortIcon('amount')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('dueDate')}
-                    className="sortable"
-                    title="Sort by Next Due Date"
-                  >
-                    Next Due Date {renderSortIcon('dueDate')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('frequency')}
-                    className="sortable"
-                    title="Sort by Frequency"
-                  >
-                    Frequency {renderSortIcon('frequency')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('account')}
-                    className="sortable"
-                    title="Sort by Account"
-                  >
-                    Account {renderSortIcon('account')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('category')}
-                    className="sortable"
-                    title="Sort by Category"
-                  >
-                    Category {renderSortIcon('category')}
-                  </th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedExpenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td data-label="Paid">
-                      <input
-                        type="checkbox"
-                        className="paid-checkbox"
-                        checked={expense.paid}
-                        onChange={() => togglePaid(expense.id)}
-                      />
-                    </td>
-                    <td data-label="Payee">{expense.payee}</td>
-                    <td data-label="Amount" style={{ fontWeight: 700, color: 'var(--text)' }}>
-                      <div className="expense-amount-cell">
-                        <span className="expense-amount-value">{formatCurrency(expense.amount)}</span>
-                        <div className="expense-mobile-actions mobile-only">
-                          <button
-                            className="btn-edit"
-                            onClick={() => openEditExpense(expense)}
-                            title="Edit"
-                            aria-label="Edit"
+                    ✖️ Clear
+                  </button>
+                </div>
+              </div>
+
+              {expenses.length === 0 ? (
+                <div className="empty-state">
+                  <p>No expenses yet. Add your first expense above!</p>
+                </div>
+              ) : (
+                <table className="expense-table">
+                  <thead>
+                    <tr>
+                      <th
+                        onClick={() => handleSort('paid')}
+                        className="sortable"
+                        title="Sort by Paid"
+                      >
+                        Paid {renderSortIcon('paid')}
+                      </th>
+                      <th
+                        onClick={() => handleSort('payee')}
+                        className="sortable"
+                        title="Sort by Payee"
+                      >
+                        Payee {renderSortIcon('payee')}
+                      </th>
+                      <th
+                        onClick={() => handleSort('amount')}
+                        className="sortable"
+                        title="Sort by Amount"
+                      >
+                        Amount {renderSortIcon('amount')}
+                      </th>
+                      <th
+                        onClick={() => handleSort('dueDate')}
+                        className="sortable"
+                        title="Sort by Next Due Date"
+                      >
+                        Next Due Date {renderSortIcon('dueDate')}
+                      </th>
+                      <th
+                        onClick={() => handleSort('frequency')}
+                        className="sortable"
+                        title="Sort by Frequency"
+                      >
+                        Frequency {renderSortIcon('frequency')}
+                      </th>
+                      <th
+                        onClick={() => handleSort('account')}
+                        className="sortable"
+                        title="Sort by Account"
+                      >
+                        Account {renderSortIcon('account')}
+                      </th>
+                      <th
+                        onClick={() => handleSort('category')}
+                        className="sortable"
+                        title="Sort by Category"
+                      >
+                        Category {renderSortIcon('category')}
+                      </th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedExpenses.map((expense) => (
+                      <tr key={expense.id}>
+                        <td data-label="Paid">
+                          <input
+                            type="checkbox"
+                            className="paid-checkbox"
+                            checked={expense.paid}
+                            onChange={() => togglePaid(expense.id)}
+                          />
+                        </td>
+                        <td data-label="Payee">{expense.payee}</td>
+                        <td data-label="Amount" style={{ fontWeight: 700, color: 'var(--text)' }}>
+                          <div className="expense-amount-cell">
+                            <span className="expense-amount-value">{formatCurrency(expense.amount)}</span>
+                            <div className="expense-mobile-actions mobile-only">
+                              <button
+                                className="btn-edit"
+                                onClick={() => openEditExpense(expense)}
+                                title="Edit"
+                                aria-label="Edit"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                className="btn-delete"
+                                onClick={() => requestDeleteExpense(expense.id)}
+                                title="Delete"
+                                aria-label="Delete"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                        <td data-label="Next Due" style={{ color: 'var(--text-secondary)' }}>
+                          {formatDate(expense.dueDate)}
+                        </td>
+                        <td data-label="Frequency" style={{ color: 'var(--text-secondary)' }}>{expense.frequency}</td>
+                        <td data-label="Account">
+                          <span className={`account-badge ${expense.account.toLowerCase().replace(' ', '')}`}>
+                            {expense.account}
+                          </span>
+                        </td>
+                        <td data-label="Category">
+                          <span
+                            className={`category-badge category-${expense.category
+                              .toLowerCase()
+                              .replace(/[^a-z0-9]+/g, '-')
+                              .replace(/^-+|-+$/g, '')}`}
                           >
-                            ✏️
-                          </button>
-                          <button
-                            className="btn-delete"
-                            onClick={() => requestDeleteExpense(expense.id)}
-                            title="Delete"
-                            aria-label="Delete"
-                          >
+                            {expense.category}
+                          </span>
+                        </td>
+                        <td data-label="Actions">
+                          <button className="btn-edit" onClick={() => openEditExpense(expense)}>✏️</button>
+                          <button className="btn-delete" onClick={() => requestDeleteExpense(expense.id)}>
                             🗑️
                           </button>
-                        </div>
-                      </div>
-                    </td>
-                    <td data-label="Next Due" style={{ color: 'var(--text-secondary)' }}>
-                      {formatDate(expense.dueDate)}
-                    </td>
-                    <td data-label="Frequency" style={{ color: 'var(--text-secondary)' }}>{expense.frequency}</td>
-                    <td data-label="Account">
-                      <span className={`account-badge ${expense.account.toLowerCase().replace(' ', '')}`}>
-                        {expense.account}
-                      </span>
-                    </td>
-                    <td data-label="Category">
-                      <span
-                        className={`category-badge category-${expense.category
-                          .toLowerCase()
-                          .replace(/[^a-z0-9]+/g, '-')
-                          .replace(/^-+|-+$/g, '')}`}
-                      >
-                        {expense.category}
-                      </span>
-                    </td>
-                    <td data-label="Actions">
-                      <button className="btn-edit" onClick={() => openEditExpense(expense)}>✏️</button>
-                      <button className="btn-delete" onClick={() => requestDeleteExpense(expense.id)}>
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           )}
         </div>
       </main>
