@@ -964,7 +964,7 @@ function App() {
           <div className="header-brand">
             <LogoGlyph />
             <div className="brand-text">
-              <h1>Mawdsley's Money</h1>
+              <h1>Expense Manager</h1>
             </div>
           </div>
           <div className="header-actions">
