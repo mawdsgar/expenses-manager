@@ -1111,11 +1111,17 @@ function App() {
                   <div className="summary-footer-text">
                     <div className="summary-label">Cashflow</div>
                     <div className="summary-subtext">
-                      {daysUntilPayday !== null
-                        ? `You get paid in ${daysUntilPayday} day${daysUntilPayday !== 1 ? 's' : ''}`
-                        : 'Payday not set'}
-                      {` and have ${formatCurrency(Math.abs(leftToGoOut))} left to go out`}
-                      {leftToGoOut < 0 ? ' (over)' : ''}.
+                      {daysUntilPayday !== null ? (
+                        <>
+                          You get paid in{' '}
+                          <span className="cashflow-emphasis">{daysUntilPayday}</span>{' '}
+                          day{daysUntilPayday !== 1 ? 's' : ''} and have{' '}
+                          <span className="cashflow-emphasis">{formatCurrency(Math.abs(leftToGoOut))}</span>{' '}
+                          left to go out{leftToGoOut < 0 ? ' (over)' : ''}.
+                        </>
+                      ) : (
+                        'Payday not set'
+                      )}
                     </div>
                   </div>
                 </div>

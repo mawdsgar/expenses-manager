@@ -367,15 +367,15 @@ body {
 }
 
 .income-item {
-  background: linear-gradient(145deg, #16a34a 0%, #22c55e 45%, #bbf7d0 100%);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.45rem 0.6rem;
-  background: linear-gradient(145deg, #b91c1c 0%, #ef4444 45%, #fecaca 100%);
+  transition: all 0.2s;
 }
 
 .income-item:hover {
-  background: linear-gradient(145deg, #f59e0b 0%, #fbbf24 45%, #fef3c7 100%);
+  border-color: var(--border-light);
   transform: translateY(-2px);
 }
 
@@ -788,6 +788,11 @@ body {
 .summary-amount {
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.cashflow-emphasis {
+  font-weight: 800;
+  font-size: 1.05rem;
 }
 
 .summary-icon {
