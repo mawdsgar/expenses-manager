@@ -1524,7 +1524,27 @@ function App() {
                     </td>
                     <td data-label="Payee">{expense.payee}</td>
                     <td data-label="Amount" style={{ fontWeight: 700, color: 'var(--text)' }}>
-                      {formatCurrency(expense.amount)}
+                      <div className="expense-amount-cell">
+                        <span className="expense-amount-value">{formatCurrency(expense.amount)}</span>
+                        <div className="expense-mobile-actions mobile-only">
+                          <button
+                            className="btn-edit"
+                            onClick={() => openEditExpense(expense)}
+                            title="Edit"
+                            aria-label="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn-delete"
+                            onClick={() => requestDeleteExpense(expense.id)}
+                            title="Delete"
+                            aria-label="Delete"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
                     </td>
                     <td data-label="Next Due" style={{ color: 'var(--text-secondary)' }}>
                       {formatDate(expense.dueDate)}

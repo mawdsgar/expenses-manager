@@ -935,6 +935,22 @@ body {
   color: var(--text);
 }
 
+.expense-amount-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expense-mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.expense-mobile-actions .btn-edit {
+  margin-right: 0;
+}
+
 .paid-checkbox {
   width: 18px;
   height: 18px;
