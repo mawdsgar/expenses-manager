@@ -762,6 +762,17 @@ body {
   margin-bottom: 0.75rem;
 }
 
+/* Improve contrast for cashflow text on bright gradient */
+.cashflow-box .summary-subtext,
+.cashflow-box .summary-label,
+.cashflow-box .summary-icon {
+  color: #1f2937;
+}
+
+.cashflow-box .cashflow-emphasis {
+  color: #0f172a;
+}
+
 .summary-footer-text {
   display: flex;
   flex-direction: column;
