@@ -1259,7 +1259,8 @@ function App() {
                       .toLowerCase()
                       .replace(/[^a-z0-9]+/g, '-')
                       .replace(/^-+|-+$/g, '');
-                    const isBarTooSmall = barWidth < 25; // Show labels outside bar if less than 25% width
+                    const labelOnFill = barWidth >= 12;
+                    const percentOnFill = barWidth >= 92;
                     
                     return (
                       <div key={category} className="category-bar-item">
@@ -1268,21 +1269,21 @@ function App() {
                             <div
                               className={`category-bar category-${categoryClass}`}
                               style={{ width: `${barWidth}%` }}
-                            >
-                              {!isBarTooSmall && (
-                                <div className="category-bar-inner">
-                                  <span className="category-bar-category">{category}</span>
-                                  <span className="category-bar-percentage">{percentage}%</span>
-                                </div>
-                              )}
-                            </div>
+                            />
 
-                            {isBarTooSmall && (
-                              <div className="category-bar-outside" aria-hidden="true">
-                                <span className="category-bar-category-outside">{category}</span>
-                                <span className="category-bar-percentage-outside">{percentage}%</span>
-                              </div>
-                            )}
+                            <div className="category-bar-overlay">
+                              <span
+                                className={`category-bar-overlay-label ${labelOnFill ? 'on-fill' : 'off-fill'}`}
+                                title={category}
+                              >
+                                {category}
+                              </span>
+                              <span
+                                className={`category-bar-overlay-percent ${percentOnFill ? 'on-fill' : 'off-fill'}`}
+                              >
+                                {percentage}%
+                              </span>
+                            </div>
                           </div>
 
                           <div className="category-bar-values">
