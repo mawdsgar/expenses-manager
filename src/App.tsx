@@ -7,59 +7,6 @@ import { AddIncomeModal } from './components/AddIncomeModal';
 import { AddSavingsModal } from './components/AddSavingsModal';
 import './App.css';
 
-const LogoGlyph = () => (
-  <svg className="brand-icon" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
-    <defs>
-      <linearGradient id="logo-frame" x1="10%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#5CE1FF" />
-        <stop offset="45%" stopColor="#7C3AED" />
-        <stop offset="100%" stopColor="#F97316" />
-      </linearGradient>
-      <radialGradient id="logo-glow" cx="50%" cy="45%" r="60%">
-        <stop offset="0%" stopColor="#F8FAFF" stopOpacity="0.8" />
-        <stop offset="65%" stopColor="#C7D2FE" stopOpacity="0.18" />
-        <stop offset="100%" stopColor="#111827" stopOpacity="0" />
-      </radialGradient>
-      <linearGradient id="logo-mark" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#22D3EE" />
-        <stop offset="50%" stopColor="#8B5CF6" />
-        <stop offset="100%" stopColor="#F59E0B" />
-      </linearGradient>
-      <linearGradient id="logo-smile" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#10B981" />
-        <stop offset="100%" stopColor="#F59E0B" />
-      </linearGradient>
-    </defs>
-
-    <rect x="6" y="6" width="84" height="84" rx="22" fill="url(#logo-frame)" />
-    <circle cx="48" cy="46" r="34" fill="url(#logo-glow)" />
-
-    <path
-      d="M22 64V30l12 18 10-16 10 16 12-18v34h-9V46l-8 12-9-14-9 14-9-12v18Z"
-      fill="url(#logo-mark)"
-      stroke="rgba(255,255,255,0.65)"
-      strokeWidth="1.2"
-      strokeLinejoin="round"
-    />
-
-    <path
-      d="M26 68c8 8 32 10 44-1"
-      fill="none"
-      stroke="url(#logo-smile)"
-      strokeWidth="4"
-      strokeLinecap="round"
-    />
-    <path
-      d="M64 65l8 3-4 7"
-      fill="none"
-      stroke="url(#logo-smile)"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const saved = localStorage.getItem('expenses');
@@ -970,9 +917,8 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <div className="header-brand">
-            <LogoGlyph />
             <div className="brand-text">
-              <h1>Expense Manager</h1>
+              <h1 className="brand-title">EXPENSE MANAGER</h1>
             </div>
           </div>
           <div className="header-actions">
