@@ -788,12 +788,20 @@ function App() {
   };
 
   // Calculate totals
-  const totalIncome = incomes.reduce((sum, income) => {
+  const totalIncomeFromSources = incomes.reduce((sum, income) => {
     if (income.frequency === 'Monthly') return sum + income.amount;
     if (income.frequency === 'Weekly') return sum + (income.amount * 4.33);
     if (income.frequency === 'Yearly') return sum + (income.amount / 12);
     return sum;
   }, 0);
+
+  const savingsMonthlyInterest = savings.reduce((sum, account) => {
+    if (account.isVariableRate || !account.interestRate) return sum;
+    const monthlyInterest = (account.balance * account.interestRate / 100) / 12;
+    return sum + monthlyInterest;
+  }, 0);
+
+  const totalIncome = totalIncomeFromSources + savingsMonthlyInterest;
 
   const totalExpenses = expenses.reduce((sum, expense) => {
     if (expense.frequency === 'Monthly') return sum + expense.amount;
@@ -1052,6 +1060,15 @@ function App() {
                   )}
                 </div>
 
+                {/* Savings Interest as income */}
+                <div className="income-item">
+                  <div className="income-header">
+                    <div className="income-name">Savings Interest</div>
+                  </div>
+                  <div className="income-amount">{formatCurrency(savingsMonthlyInterest)}</div>
+                  <div className="income-details">Monthly · Variable</div>
+                </div>
+
                 {/* Inline total income */}
                 <div className="card-footer-summary income-footer">
                   <div className="summary-icon">📈</div>
@@ -1072,9 +1089,9 @@ function App() {
                 Expenditure
               </span>
               <div className="card-header-right">
-                {dashboardCollapsed && (
+                {dashboardCollapsed ? (
                   <span className="card-summary-value">{formatCurrency(totalExpenditure)}</span>
-                )}
+                ) : null}
                 <button
                   className="btn-icon btn-collapse"
                   onClick={toggleDashboardCollapsed}
