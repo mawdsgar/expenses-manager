@@ -773,6 +773,23 @@ body {
   color: #0f172a;
 }
 
+/* Boost label/icon contrast on gradient summary cards */
+.income-footer .summary-label,
+.income-footer .summary-icon,
+.income-footer .summary-amount,
+.expenses-footer .summary-label,
+.expenses-footer .summary-icon,
+.expenses-footer .summary-amount,
+.savings-footer .summary-label,
+.savings-footer .summary-icon,
+.savings-footer .summary-amount,
+.cashflow-box .summary-label,
+.cashflow-box .summary-icon,
+.cashflow-box .summary-amount {
+  color: #0f172a;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.35);
+}
+
 .summary-footer-text {
   display: flex;
   flex-direction: column;
