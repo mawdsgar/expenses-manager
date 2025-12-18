@@ -989,8 +989,12 @@ function App() {
                 {dashboardCollapsed ? (
                   <span className="card-summary-value">{formatCurrency(totalIncome)}</span>
                 ) : (
-                  <button className="btn-add" onClick={() => setShowIncomeModal(true)}>
-                    + Add Income
+                  <button
+                    className="btn-add"
+                    onClick={() => setShowIncomeModal(true)}
+                    aria-label="Add income"
+                  >
+                    +
                   </button>
                 )}
                 <button
@@ -1043,10 +1047,10 @@ function App() {
                   )}
                 </div>
 
-                {/* Mobile inline total income */}
-                <div className="mobile-inline-summary mobile-only">
-                  <div className="summary-box large green">
-                    <div className="summary-icon">📈</div>
+                {/* Inline total income */}
+                <div className="card-footer-summary income-footer">
+                  <div className="summary-icon">📈</div>
+                  <div className="summary-footer-text">
                     <div className="summary-label">Total Income</div>
                     <div className="summary-amount">{formatCurrency(totalIncome)}</div>
                   </div>
@@ -1060,7 +1064,7 @@ function App() {
             <div className="card-header">
               <span className="card-title">
                 <span className="card-icon">📋</span>
-                Expenses
+                Expenditure
               </span>
               <div className="card-header-right">
                 {dashboardCollapsed && (
@@ -1079,6 +1083,21 @@ function App() {
 
             {!dashboardCollapsed && (
               <>
+                {/* Combined payday + left-to-go-out panel */}
+                <div className="card-inline-summary cashflow-box">
+                  <div className="summary-icon">📅</div>
+                  <div className="summary-footer-text">
+                    <div className="summary-label">Cashflow</div>
+                    <div className="summary-subtext">
+                      {daysUntilPayday !== null
+                        ? `You get paid in ${daysUntilPayday} day${daysUntilPayday !== 1 ? 's' : ''}`
+                        : 'Payday not set'}
+                      {` and have ${formatCurrency(Math.abs(leftToGoOut))} left to go out`}
+                      {leftToGoOut < 0 ? ' (over)' : ''}.
+                    </div>
+                  </div>
+                </div>
+
                 {/* Allowances Section */}
                 <div className="expense-section-container">
                   <div 
@@ -1183,19 +1202,21 @@ function App() {
                           <span className="account-amount">{formatCurrency(amount)}</span>
                         </div>
                       ))}
-                      {Object.keys(expensesByAccount).length === 0 && (
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', padding: '0.5rem 0' }}>
-                          No expenses yet
+                      <div className="card-footer-summary expenses-footer">
+                        <div className="summary-icon">📉</div>
+                        <div className="summary-footer-text">
+                          <div className="summary-label">Total Expenditure</div>
+                          <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Mobile inline total expenditure (to match Income card) */}
-                <div className="mobile-inline-summary mobile-only">
-                  <div className="summary-box large red">
-                    <div className="summary-icon">📉</div>
+                {/* Inline total expenses box to mirror income */}
+                <div className="card-footer-summary expenses-footer">
+                  <div className="summary-icon">📉</div>
+                  <div className="summary-footer-text">
                     <div className="summary-label">Total Expenditure</div>
                     <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
                   </div>
@@ -1204,30 +1225,11 @@ function App() {
             )}
           </div>
 
-          {/* Mobile summary stack for totals */}
-          {!dashboardCollapsed && (
-            <div className="mobile-summary-stack mobile-only">
-              <div className={`summary-box alert ${leftToGoOut < 0 ? 'negative' : 'positive'}`}>
-                <div className="summary-icon">⬇️</div>
-                <div className="summary-label">Left to go out</div>
-                <div className="summary-amount">{formatCurrency(Math.abs(leftToGoOut))}</div>
-              </div>
-
-              <div className="summary-box payday">
-                <div className="summary-icon">📅</div>
-                <div className="summary-label">Next Payday</div>
-                <div className="summary-days">
-                  {daysUntilPayday !== null ? `${daysUntilPayday} day${daysUntilPayday !== 1 ? 's' : ''}` : 'N/A'}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Spending by Category */}
           <div className={`dashboard-card category-card${dashboardCollapsed ? ' collapsed' : ''}`}>
             <div className="card-header">
               <span className="card-title">
-                <span className="card-icon">📊</span>
+                <span className="card-icon">🧭</span>
                 Spending by Category
               </span>
               <div className="card-header-right">
@@ -1261,7 +1263,7 @@ function App() {
                       .replace(/^-+|-+$/g, '');
                     const labelOnFill = barWidth >= 12;
                     const percentOnFill = barWidth >= 92;
-                    
+
                     return (
                       <div key={category} className="category-bar-item">
                         <div className="category-bar-row">
@@ -1309,8 +1311,12 @@ function App() {
                 {dashboardCollapsed ? (
                   <span className="card-summary-value">{formatCurrency(totalSavings)}</span>
                 ) : (
-                  <button className="btn-add" onClick={() => setShowSavingsModal(true)}>
-                    + Add Savings Account
+                  <button
+                    className="btn-add"
+                    onClick={() => setShowSavingsModal(true)}
+                    aria-label="Add savings account"
+                  >
+                    +
                   </button>
                 )}
                 <button
@@ -1326,13 +1332,6 @@ function App() {
 
             {!dashboardCollapsed && (
               <>
-                {/* Total Savings Section */}
-                <div className="savings-total-section">
-                  <div className="savings-total-label">Total Savings</div>
-                  <div className="savings-total-amount">{formatCurrency(totalSavings)}</div>
-                  <div className="savings-icon">🐷</div>
-                </div>
-
                 {/* Individual Savings Accounts */}
                 <div className="savings-accounts-list">
                   {savings.map((account) => {
@@ -1381,41 +1380,17 @@ function App() {
                     </div>
                   )}
                 </div>
+
+                {/* Total Savings Footer */}
+                <div className="card-footer-summary savings-footer">
+                  <div className="summary-icon">🐷</div>
+                  <div className="summary-footer-text">
+                    <div className="summary-label">Total Savings</div>
+                    <div className="summary-amount">{formatCurrency(totalSavings)}</div>
+                  </div>
+                </div>
               </>
             )}
-          </div>
-        </div>
-
-        {/* Bottom Summary Row */}
-        <div className="bottom-summary">
-          {/* Total Income */}
-          <div className="summary-box large green desktop-only">
-            <div className="summary-icon">📈</div>
-            <div className="summary-label">Total Income</div>
-            <div className="summary-amount">{formatCurrency(totalIncome)}</div>
-          </div>
-          
-          {/* Total Expenses */}
-          <div className="summary-box large red">
-            <div className="summary-icon">📉</div>
-            <div className="summary-label">Total Expenditure</div>
-            <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
-          </div>
-
-          {/* Next Payday */}
-          <div className="summary-box payday">
-            <div className="summary-icon">📅</div>
-            <div className="summary-label">Next Payday</div>
-            <div className="summary-days">
-              {daysUntilPayday !== null ? `${daysUntilPayday} day${daysUntilPayday !== 1 ? 's' : ''}` : 'N/A'}
-            </div>
-          </div>
-
-          {/* Left to go out */}
-          <div className={`summary-box alert ${leftToGoOut < 0 ? 'negative' : 'positive'}`}>
-            <div className="summary-icon">⬇️</div>
-            <div className="summary-label">Left to go out</div>
-            <div className="summary-amount">{formatCurrency(Math.abs(leftToGoOut))}</div>
           </div>
         </div>
 
@@ -1426,8 +1401,12 @@ function App() {
               <span>📋</span>
               All Expenses
             </h2>
-            <button className="btn-add" onClick={() => setShowExpenseModal(true)}>
-              + Add Expense
+            <button
+              className="btn-add"
+              onClick={() => setShowExpenseModal(true)}
+              aria-label="Add expense"
+            >
+              +
             </button>
           </div>
 

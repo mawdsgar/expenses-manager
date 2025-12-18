@@ -77,10 +77,11 @@ body {
 }
 
 .app-header {
-  background: linear-gradient(120deg, rgba(124, 58, 237, 0.18), rgba(34, 211, 238, 0.12)), var(--bg);
-  border-bottom: 1px solid var(--border-light);
+  background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.06), transparent 35%),
+    linear-gradient(135deg, #090909, #0d0f16 55%, #111827);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 1.5rem 2rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
 .header-content {
@@ -109,12 +110,12 @@ body {
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
-  color: var(--text);
+  color: #ffffff;
 }
 
 .brand-text p {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
 }
 
@@ -221,7 +222,7 @@ body {
 /* Savings header: avoid button clipping on narrower desktop widths */
 .savings-card .card-header {
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.75rem;
 }
 
@@ -232,7 +233,7 @@ body {
 
 .savings-card .card-header-right {
   margin-left: auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 
@@ -292,11 +293,33 @@ body {
   font-size: 1.1rem;
 }
 
-.btn-add,
+.btn-add {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #ff9b3f, #ff6b1f);
+  color: #1b0f05;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 25px rgba(255, 123, 31, 0.28), var(--shadow);
+}
+
+.btn-add:hover {
+  transform: translateY(-1px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 12px 30px rgba(255, 123, 31, 0.35), var(--shadow);
+}
+
 .btn-control {
-  background: linear-gradient(135deg, rgba(124,58,237,0.9), rgba(34,211,238,0.85));
-  color: white;
-  border: 1px solid rgba(255,255,255,0.22);
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: 0.55rem 1.1rem;
   border-radius: 12px;
   font-size: 0.9rem;
@@ -306,24 +329,13 @@ body {
   align-items: center;
   gap: 0.5rem;
   transition: all 0.2s;
-  box-shadow: var(--shadow);
-}
-
-.btn-add:hover,
-.btn-control:hover {
-  transform: translateY(-1px) scale(1.01);
-  border-color: rgba(255,255,255,0.32);
-}
-
-.btn-control {
-  background: var(--bg-card);
-  color: var(--text);
-  border: 1px solid var(--border);
   box-shadow: none;
 }
 
 .btn-control:hover {
   background: var(--bg-card-hover);
+  transform: translateY(-1px) scale(1.01);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 .card-value {
@@ -718,81 +730,63 @@ body {
 }
 
 /* Summary Boxes */
-.bottom-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  align-items: stretch;
-}
 
-.summary-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 2rem;
+.card-footer-summary,
+.card-inline-summary {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 100%;
-  min-height: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.summary-box.large {
-  text-align: center;
-}
-
-.summary-box.green {
-  background: var(--green);
-  color: white;
-  border-color: var(--green);
-}
-
-.summary-box.red {
-  background: var(--red);
-  color: white;
-  border-color: var(--red);
-}
-
-.summary-box.payday {
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   background: var(--bg-card);
-}
-
-.summary-box.alert {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: white;
-}
-
-.summary-box.alert.positive {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.summary-box.alert.negative {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.mobile-inline-summary {
+  box-shadow: var(--shadow);
   margin-top: 1rem;
 }
 
-.mobile-only {
-  display: none;
+.income-footer {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(124, 58, 237, 0.12));
 }
 
-.desktop-only {
-  display: block;
+.expenses-footer {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(249, 115, 22, 0.12));
 }
 
-.mobile-summary-stack {
-  display: none;
-  gap: 1rem;
+.savings-footer {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.12));
+}
+
+.cashflow-box {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(34, 211, 238, 0.12));
+  margin-bottom: 0.75rem;
+}
+
+.summary-footer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.summary-subtext {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.summary-icon {
+  font-size: 1.5rem;
+}
+
+.summary-label {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.summary-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .summary-icon {
