@@ -1123,9 +1123,18 @@ function App() {
 
                 {/* Allowances Section */}
                 <div className="expense-section-container">
-                  <div 
-                    className="expense-section-header"
+                  <div
+                    className="expense-section-header clickable"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={allowancesExpanded}
                     onClick={() => setAllowancesExpanded(!allowancesExpanded)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setAllowancesExpanded(!allowancesExpanded);
+                      }
+                    }}
                   >
                     <span className="section-name">Allowances</span>
                     <div className="section-right">
@@ -1205,9 +1214,18 @@ function App() {
 
                 {/* Expenses Breakdown Section */}
                 <div className="expense-section-container">
-                  <div 
-                    className="expense-section-header"
+                  <div
+                    className="expense-section-header clickable"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={expensesBreakdownExpanded}
                     onClick={() => setExpensesBreakdownExpanded(!expensesBreakdownExpanded)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setExpensesBreakdownExpanded(!expensesBreakdownExpanded);
+                      }
+                    }}
                   >
                     <span className="section-name">Expenses</span>
                     <div className="section-right">

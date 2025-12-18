@@ -461,6 +461,15 @@ body {
   margin-bottom: 0.75rem;
 }
 
+.expense-section-header.clickable {
+  cursor: pointer;
+}
+
+.expense-section-header.clickable:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 6px;
+}
+
 .expense-section-header:hover {
   background: rgba(255, 120, 70, 0.15);
   border-color: rgba(255, 120, 70, 0.3);
