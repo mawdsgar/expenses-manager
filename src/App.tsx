@@ -143,7 +143,16 @@ function App() {
     const saved = localStorage.getItem('foodKidsFuel');
     return saved || '';
   });
+  const [allowancesLastSaved, setAllowancesLastSaved] = useState(() => ({
+    allowance1: localStorage.getItem('allowance1') || '',
+    allowance2: localStorage.getItem('allowance2') || '',
+    foodKidsFuel: localStorage.getItem('foodKidsFuel') || '',
+  }));
+  const [allowancesDirty, setAllowancesDirty] = useState(false);
+  const [isSavingAllowances, setIsSavingAllowances] = useState(false);
+  const [allowancesSaveError, setAllowancesSaveError] = useState<string | null>(null);
   const [allowancesLoaded, setAllowancesLoaded] = useState(false);
+  const [allowancesRowId, setAllowancesRowId] = useState<string | null>(null);
 
   // Expandable sections state
   const [allowancesExpanded, setAllowancesExpanded] = useState(false);
@@ -232,7 +241,11 @@ function App() {
         setAllowancesLoaded(true);
         return;
       }
-      const { data, error } = await supabase.from('allowances').select('*').limit(1);
+      const { data, error } = await supabase
+        .from('allowances')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
       if (error) {
         console.error('Failed to load allowances from Supabase:', error.message);
         setAllowancesLoaded(true);
@@ -240,9 +253,15 @@ function App() {
       }
       if (data && data.length > 0) {
         const row = data[0];
+        setAllowancesRowId(row.id ?? null);
         setAllowance1(row.allowance1 != null ? String(row.allowance1) : '');
         setAllowance2(row.allowance2 != null ? String(row.allowance2) : '');
         setFoodKidsFuel(row.food_kids_fuel != null ? String(row.food_kids_fuel) : '');
+        setAllowancesLastSaved({
+          allowance1: row.allowance1 != null ? String(row.allowance1) : '',
+          allowance2: row.allowance2 != null ? String(row.allowance2) : '',
+          foodKidsFuel: row.food_kids_fuel != null ? String(row.food_kids_fuel) : '',
+        });
       }
       setAllowancesLoaded(true);
     };
@@ -263,33 +282,57 @@ function App() {
   }, [accounts]);
 
   useEffect(() => {
-    localStorage.setItem('allowance1', allowance1);
-  }, [allowance1]);
+    if (!allowancesLoaded) return;
+    setAllowancesDirty(
+      allowance1 !== allowancesLastSaved.allowance1 ||
+      allowance2 !== allowancesLastSaved.allowance2 ||
+      foodKidsFuel !== allowancesLastSaved.foodKidsFuel
+    );
+  }, [allowance1, allowance2, foodKidsFuel, allowancesLastSaved, allowancesLoaded]);
 
-  useEffect(() => {
-    localStorage.setItem('allowance2', allowance2);
-  }, [allowance2]);
+  const saveAllowances = async () => {
+    if (!allowancesLoaded) return;
 
-  useEffect(() => {
-    localStorage.setItem('foodKidsFuel', foodKidsFuel);
-  }, [foodKidsFuel]);
+    setIsSavingAllowances(true);
+    setAllowancesSaveError(null);
 
-  useEffect(() => {
-    if (!supabaseEnabled || !allowancesLoaded) return;
-    const saveAllowances = async () => {
-      const payload = {
-        id: 'singleton',
-        allowance1: Number(allowance1) || 0,
-        allowance2: Number(allowance2) || 0,
-        food_kids_fuel: Number(foodKidsFuel) || 0,
-      };
-      const { error } = await supabase.from('allowances').upsert(payload);
-      if (error) {
-        console.error('Failed to save allowances to Supabase:', error.message);
-      }
+    const payload = {
+      allowance1: Number(allowance1) || 0,
+      allowance2: Number(allowance2) || 0,
+      food_kids_fuel: Number(foodKidsFuel) || 0,
     };
-    saveAllowances();
-  }, [allowance1, allowance2, foodKidsFuel, supabaseEnabled, allowancesLoaded]);
+
+    try {
+      if (supabaseEnabled) {
+        if (allowancesRowId) {
+          const { error } = await supabase
+            .from('allowances')
+            .update(payload)
+            .eq('id', allowancesRowId);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase
+            .from('allowances')
+            .insert(payload)
+            .select('id')
+            .single();
+          if (error) throw error;
+          setAllowancesRowId(data?.id ?? null);
+        }
+      }
+
+      // Always mirror to localStorage as a convenient fallback.
+      localStorage.setItem('allowance1', allowance1);
+      localStorage.setItem('allowance2', allowance2);
+      localStorage.setItem('foodKidsFuel', foodKidsFuel);
+      setAllowancesLastSaved({ allowance1, allowance2, foodKidsFuel });
+    } catch (error: any) {
+      console.error('Failed to save allowances:', error?.message || error);
+      setAllowancesSaveError(error?.message || 'Failed to save allowances');
+    } finally {
+      setIsSavingAllowances(false);
+    }
+  };
 
   // Auto-update income due dates when they're reached
   useEffect(() => {
@@ -1090,6 +1133,28 @@ function App() {
                             value={foodKidsFuel}
                             onChange={(e) => setFoodKidsFuel(e.target.value)}
                           />
+                        </div>
+                      </div>
+
+                      <div className="allowance-actions">
+                        <button
+                          className="btn-control"
+                          onClick={saveAllowances}
+                          disabled={isSavingAllowances || !allowancesDirty}
+                          title={supabaseEnabled ? 'Save allowances to Supabase' : 'Save allowances locally'}
+                        >
+                          {isSavingAllowances ? 'Saving…' : '💾 Save Allowances'}
+                        </button>
+                        <div className="allowance-status" aria-live="polite">
+                          {supabaseEnabled && !allowancesLoaded ? (
+                            <span>Loading…</span>
+                          ) : allowancesSaveError ? (
+                            <span className="allowance-status-error">{allowancesSaveError}</span>
+                          ) : allowancesDirty ? (
+                            <span className="allowance-status-unsaved">Unsaved changes</span>
+                          ) : (
+                            <span className="allowance-status-saved">Saved</span>
+                          )}
                         </div>
                       </div>
                     </div>
