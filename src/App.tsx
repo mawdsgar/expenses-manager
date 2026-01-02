@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type RefObject } from 'react';
 import * as XLSX from 'xlsx';
 import type { Expense, Income, SavingsAccount } from './types/expense';
 import { supabase } from './lib/supabase';
@@ -53,6 +53,8 @@ function App() {
     return saved || 'dark';
   });
 
+  const [dashboardScrollTarget, setDashboardScrollTarget] = useState<HTMLElement | null>(null);
+
   // Dashboard roll-up (collapsing one collapses all)
   const [dashboardCollapsed, setDashboardCollapsed] = useState(() => {
     const saved = localStorage.getItem('dashboardCollapsed');
@@ -73,7 +75,10 @@ function App() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const toggleDashboardCollapsed = () => {
+  const toggleDashboardCollapsed = (sectionRef?: RefObject<HTMLElement>) => {
+    if (dashboardCollapsed && sectionRef?.current) {
+      setDashboardScrollTarget(sectionRef.current);
+    }
     setDashboardCollapsed((prev) => !prev);
   };
 
@@ -239,6 +244,16 @@ function App() {
   useEffect(() => {
     localStorage.setItem('savings', JSON.stringify(savings));
   }, [savings]);
+
+  useEffect(() => {
+    if (!dashboardCollapsed && dashboardScrollTarget) {
+      const target = dashboardScrollTarget;
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setDashboardScrollTarget(null);
+      });
+    }
+  }, [dashboardCollapsed, dashboardScrollTarget]);
 
   useEffect(() => {
     localStorage.setItem('accounts', JSON.stringify(accounts));
@@ -910,6 +925,11 @@ function App() {
     return sortDir === 'asc' ? cmp : -cmp;
   });
 
+  const incomeCardRef = useRef<HTMLDivElement>(null);
+  const expensesCardRef = useRef<HTMLDivElement>(null);
+  const categoryCardRef = useRef<HTMLDivElement>(null);
+  const savingsCardRef = useRef<HTMLDivElement>(null);
+
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) {
       setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -954,17 +974,20 @@ function App() {
         {/* Dashboard Grid */}
         <div className="dashboard-grid">
           {/* Income Card */}
-          <div className={`dashboard-card income-card${dashboardCollapsed ? ' collapsed' : ''}`}>
+          <div
+            ref={incomeCardRef}
+            className={`dashboard-card income-card${dashboardCollapsed ? ' collapsed' : ''}`}
+          >
             <div
               className="card-header clickable"
               role="button"
               tabIndex={0}
               aria-expanded={!dashboardCollapsed}
-              onClick={toggleDashboardCollapsed}
+              onClick={() => toggleDashboardCollapsed(incomeCardRef)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  toggleDashboardCollapsed();
+                  toggleDashboardCollapsed(incomeCardRef);
                 }
               }}
             >
@@ -991,7 +1014,7 @@ function App() {
                   className="btn-icon btn-collapse"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleDashboardCollapsed();
+                    toggleDashboardCollapsed(incomeCardRef);
                   }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
@@ -1062,17 +1085,20 @@ function App() {
           </div>
 
           {/* Expenses Card */}
-          <div className={`dashboard-card expenses-card${dashboardCollapsed ? ' collapsed' : ''}`}>
+          <div
+            ref={expensesCardRef}
+            className={`dashboard-card expenses-card${dashboardCollapsed ? ' collapsed' : ''}`}
+          >
             <div
               className="card-header clickable"
               role="button"
               tabIndex={0}
               aria-expanded={!dashboardCollapsed}
-              onClick={toggleDashboardCollapsed}
+              onClick={() => toggleDashboardCollapsed(expensesCardRef)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  toggleDashboardCollapsed();
+                  toggleDashboardCollapsed(expensesCardRef);
                 }
               }}
             >
@@ -1088,7 +1114,7 @@ function App() {
                   className="btn-icon btn-collapse"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleDashboardCollapsed();
+                    toggleDashboardCollapsed(expensesCardRef);
                   }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
@@ -1110,7 +1136,7 @@ function App() {
                         <>
                           You get paid in{' '}
                           <span className="cashflow-emphasis">{daysUntilPayday}</span>{' '}
-                          day{daysUntilPayday !== 1 ? 's' : ''} and have{' '}
+                          <span className="cashflow-emphasis">day{daysUntilPayday !== 1 ? 's' : ''}</span> and have{' '}
                           <span className="cashflow-emphasis">{formatCurrency(Math.abs(leftToGoOut))}</span>{' '}
                           left to go out{leftToGoOut < 0 ? ' (over)' : ''}.
                         </>
@@ -1260,17 +1286,20 @@ function App() {
           </div>
 
           {/* Spending by Category */}
-          <div className={`dashboard-card category-card${dashboardCollapsed ? ' collapsed' : ''}`}>
+          <div
+            ref={categoryCardRef}
+            className={`dashboard-card category-card${dashboardCollapsed ? ' collapsed' : ''}`}
+          >
             <div
               className="card-header clickable"
               role="button"
               tabIndex={0}
               aria-expanded={!dashboardCollapsed}
-              onClick={toggleDashboardCollapsed}
+              onClick={() => toggleDashboardCollapsed(categoryCardRef)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  toggleDashboardCollapsed();
+                  toggleDashboardCollapsed(categoryCardRef);
                 }
               }}
             >
@@ -1286,7 +1315,7 @@ function App() {
                   className="btn-icon btn-collapse"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleDashboardCollapsed();
+                    toggleDashboardCollapsed(categoryCardRef);
                   }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
@@ -1350,17 +1379,20 @@ function App() {
           </div>
 
           {/* Savings Card */}
-          <div className={`dashboard-card savings-card${dashboardCollapsed ? ' collapsed' : ''}`}>
+          <div
+            ref={savingsCardRef}
+            className={`dashboard-card savings-card${dashboardCollapsed ? ' collapsed' : ''}`}
+          >
             <div
               className="card-header clickable"
               role="button"
               tabIndex={0}
               aria-expanded={!dashboardCollapsed}
-              onClick={toggleDashboardCollapsed}
+              onClick={() => toggleDashboardCollapsed(savingsCardRef)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  toggleDashboardCollapsed();
+                  toggleDashboardCollapsed(savingsCardRef);
                 }
               }}
             >
@@ -1387,7 +1419,7 @@ function App() {
                   className="btn-icon btn-collapse"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleDashboardCollapsed();
+                    toggleDashboardCollapsed(savingsCardRef);
                   }}
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}

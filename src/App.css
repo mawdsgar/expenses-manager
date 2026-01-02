@@ -787,7 +787,9 @@ body {
 }
 
 .cashflow-box .cashflow-emphasis {
-  color: #0f172a;
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 1.05rem;
 }
 
 /* Boost label/icon contrast on gradient summary cards */
