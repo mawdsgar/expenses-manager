@@ -47,12 +47,6 @@ function App() {
   const [undoTimer, setUndoTimer] = useState<number>(0);
   const [undoIntervalId, setUndoIntervalId] = useState<number | null>(null);
 
-  // Theme state (default to dark)
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    return saved || 'dark';
-  });
-
   const [dashboardScrollTarget, setDashboardScrollTarget] = useState<HTMLElement | null>(null);
 
   // Dashboard roll-up (collapsing one collapses all)
@@ -63,19 +57,10 @@ function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
     localStorage.setItem('dashboardCollapsed', String(dashboardCollapsed));
   }, [dashboardCollapsed]);
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  const toggleDashboardCollapsed = (sectionRef?: RefObject<HTMLElement>) => {
+  const toggleDashboardCollapsed = (sectionRef?: RefObject<HTMLElement | null>) => {
     if (dashboardCollapsed && sectionRef?.current) {
       setDashboardScrollTarget(sectionRef.current);
     }
@@ -957,16 +942,7 @@ function App() {
               <h1 className="brand-title">EXPENSE MANAGER</h1>
             </div>
           </div>
-          <div className="header-actions">
-            <button
-              className="btn-theme"
-              onClick={toggleTheme}
-              title="Toggle theme"
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? '☼' : '☾'}
-            </button>
-          </div>
+          <div className="header-actions" />
         </div>
       </header>
 
