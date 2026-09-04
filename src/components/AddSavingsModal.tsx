@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import type { SavingsAccount } from '../types/expense';
 
 interface AddSavingsModalProps {
@@ -71,7 +72,7 @@ export const AddSavingsModal: React.FC<AddSavingsModalProps> = ({ isOpen, onClos
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">{editingSavings ? 'Edit Savings Account' : 'Add Savings Account'}</h2>
-          <button className="btn-close" onClick={onClose}>×</button>
+          <button className="btn-close" onClick={onClose} aria-label="Close"><X size={19} /></button>
         </div>
 
         <form onSubmit={handleSubmit}>

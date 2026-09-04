@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CalendarDays, X } from 'lucide-react';
 import type { Income, Frequency } from '../types/expense';
 import { frequencies } from '../types/expense';
 
@@ -85,7 +86,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">{editingIncome ? 'Edit Income' : 'Add Income'}</h2>
-          <button className="btn-close" onClick={onClose}>×</button>
+          <button className="btn-close" onClick={onClose} aria-label="Close"><X size={19} /></button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -135,7 +136,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
           <div className="form-group">
             <label className="form-label">Due Date</label>
             <div className="input-with-icon">
-              <span className="input-icon">📅</span>
+              <span className="input-icon"><CalendarDays size={16} /></span>
               <input
                 type="date"
                 className="form-input"

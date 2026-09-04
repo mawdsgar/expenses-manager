@@ -25,7 +25,7 @@ export const Auth: React.FC = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>💰 Monthly Expense Manager</h1>
+        <h1>Expense Manager</h1>
         <p className="auth-subtitle">Sign in to access your expenses</p>
 
         <form onSubmit={handleSubmit} className="auth-form">

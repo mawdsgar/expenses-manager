@@ -1,13 +1,43 @@
 import { useState, useEffect, useRef, type RefObject } from 'react';
-import * as XLSX from 'xlsx';
 import type { Expense, Income, SavingsAccount } from './types/expense';
 import { supabase } from './lib/supabase';
 import { AddExpenseModal } from './components/AddExpenseModal';
 import { AddIncomeModal } from './components/AddIncomeModal';
 import { AddSavingsModal } from './components/AddSavingsModal';
+import { RenovationPlanner } from './features/renovation/RenovationPlanner';
+import {
+  BadgePoundSterling,
+  AlertTriangle,
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  CircleDollarSign,
+  Download,
+  Home,
+  Hammer,
+  LayoutDashboard,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PiggyBank,
+  Pencil,
+  Plus,
+  ReceiptText,
+  RotateCcw,
+  Sparkles,
+  Star,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
+  Undo2,
+} from 'lucide-react';
 import './App.css';
 
 function App() {
+  const [activeWorkspace, setActiveWorkspace] = useState<'overview' | 'renovation'>('overview');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    localStorage.getItem('sidebarCollapsed') === 'true',
+  );
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const saved = localStorage.getItem('expenses');
     return saved ? JSON.parse(saved) : [];
@@ -52,13 +82,17 @@ function App() {
   // Dashboard roll-up (collapsing one collapses all)
   const [dashboardCollapsed, setDashboardCollapsed] = useState(() => {
     const saved = localStorage.getItem('dashboardCollapsed');
-    if (saved === null) return true;
+    if (saved === null) return false;
     return saved === 'true';
   });
 
   useEffect(() => {
     localStorage.setItem('dashboardCollapsed', String(dashboardCollapsed));
   }, [dashboardCollapsed]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const toggleDashboardCollapsed = (sectionRef?: RefObject<HTMLElement | null>) => {
     if (dashboardCollapsed && sectionRef?.current) {
@@ -610,7 +644,8 @@ function App() {
     }
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await import('xlsx');
     // Prepare data for Excel export
     const exportData = expenses.map(expense => ({
       Payee: expense.payee,
@@ -778,6 +813,7 @@ function App() {
 
   // Total expenditure includes both expenses and allowances
   const totalExpenditure = totalExpenses + totalAllowances;
+  const remainingIncome = totalIncome - totalExpenditure;
 
   // Calculate days until next payday (from primary income)
   const primaryIncome = incomes.find(income => income.isPrimary);
@@ -789,6 +825,7 @@ function App() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const nextPaydayDate = primaryIncome ? new Date(primaryIncome.dueDate) : null;
+  nextPaydayDate?.setHours(0, 0, 0, 0);
   
   const unpaidExpensesDueBeforePayday = expenses
     .filter(expense => {
@@ -797,8 +834,8 @@ function App() {
       
       const expenseDueDate = new Date(expense.dueDate);
       expenseDueDate.setHours(0, 0, 0, 0);
-      // Include all unpaid expenses due on or before next payday (including overdue)
-      return expenseDueDate <= nextPaydayDate;
+      // Payday starts the next cashflow cycle, so only count expenses before it.
+      return expenseDueDate < nextPaydayDate;
     })
     .reduce((sum, expense) => sum + expense.amount, 0);
 
@@ -928,19 +965,131 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <div className="header-content">
-          <div className="header-brand">
-            <div className="brand-text">
-              <h1 className="brand-title">EXPENSE MANAGER</h1>
+    <div className={`app ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}>
+      <aside className="app-sidebar">
+        <div className="sidebar-brand">
+          <span className="brand-mark"><BadgePoundSterling size={22} /></span>
+          <span className="brand-name">Expense Manager</span>
+        </div>
+        <button
+          className="sidebar-collapse-toggle"
+          type="button"
+          onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+          aria-label={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+          title={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+        >
+          {sidebarCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+        </button>
+        <nav className="sidebar-nav" aria-label="Primary navigation">
+          <button
+            className={`sidebar-link ${activeWorkspace === 'overview' ? 'active' : ''}`}
+            aria-label="Overview"
+            onClick={() => {
+              setActiveWorkspace('overview');
+              requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            }}
+          >
+            <LayoutDashboard size={19} />
+            <span>Overview</span>
+          </button>
+          <button className="sidebar-link" aria-label="Expenses" onClick={() => {
+            setActiveWorkspace('overview');
+            window.setTimeout(() => document.querySelector('.expense-section')?.scrollIntoView({ behavior: 'smooth' }), 0);
+          }}>
+            <ReceiptText size={19} />
+            <span>Expenses</span>
+          </button>
+          <button className="sidebar-link" aria-label="Income" onClick={() => {
+            setActiveWorkspace('overview');
+            window.setTimeout(() => incomeCardRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
+          }}>
+            <TrendingUp size={19} />
+            <span>Income</span>
+          </button>
+          <button className="sidebar-link" aria-label="Savings" onClick={() => {
+            setActiveWorkspace('overview');
+            window.setTimeout(() => savingsCardRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
+          }}>
+            <PiggyBank size={19} />
+            <span>Savings</span>
+          </button>
+          <button
+            className={`sidebar-link ${activeWorkspace === 'renovation' ? 'active' : ''}`}
+            aria-label="Renovation"
+            onClick={() => {
+              setActiveWorkspace('renovation');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
+            <Hammer size={19} />
+            <span>Renovation</span>
+          </button>
+        </nav>
+        <div className="sidebar-footer">
+          <div className="household-avatar"><Home size={18} /></div>
+          <div>
+            <strong>Our household</strong>
+            <span>Shared monthly plan</span>
+          </div>
+        </div>
+      </aside>
+
+      <div className="app-workspace">
+        {activeWorkspace === 'overview' && <header className="app-header">
+          <div className="header-content">
+            <div>
+              <h1 className="brand-title">Household overview</h1>
+              <p className="header-period">
+                <CalendarDays size={15} />
+                {new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(new Date())}
+              </p>
+            </div>
+            <div className="header-actions">
+              <div className="header-avatar">GM</div>
             </div>
           </div>
-          <div className="header-actions" />
-        </div>
-      </header>
+        </header>}
 
-      <main className="app-main">
+        <main className={activeWorkspace === 'renovation' ? 'renovation-main' : 'app-main'}>
+        {activeWorkspace === 'renovation' ? (
+          <RenovationPlanner currentSavings={totalSavings} />
+        ) : (
+        <>
+        <section className="summary-strip" aria-label="Monthly summary">
+          <div className="summary-metric metric-income">
+            <div className="metric-icon"><TrendingUp size={19} /></div>
+            <div>
+              <span>Monthly income</span>
+              <strong>{formatCurrency(totalIncome)}</strong>
+              <small>{incomes.length} income source{incomes.length === 1 ? '' : 's'}</small>
+            </div>
+          </div>
+          <div className="summary-metric metric-committed">
+            <div className="metric-icon"><TrendingDown size={19} /></div>
+            <div>
+              <span>Committed</span>
+              <strong>{formatCurrency(totalExpenditure)}</strong>
+              <small>{totalIncome > 0 ? `${Math.round((totalExpenditure / totalIncome) * 100)}% of income` : 'No income set'}</small>
+            </div>
+          </div>
+          <div className="summary-metric metric-remaining">
+            <div className="metric-icon"><CircleDollarSign size={19} /></div>
+            <div>
+              <span>Remaining</span>
+              <strong>{formatCurrency(remainingIncome)}</strong>
+              <small>After regular outgoings</small>
+            </div>
+          </div>
+          <div className="summary-metric metric-savings">
+            <div className="metric-icon"><PiggyBank size={19} /></div>
+            <div>
+              <span>Savings</span>
+              <strong>{formatCurrency(totalSavings)}</strong>
+              <small>{savings.length} account{savings.length === 1 ? '' : 's'}</small>
+            </div>
+          </div>
+        </section>
+
         {/* Dashboard Grid */}
         <div className="dashboard-grid">
           {/* Income Card */}
@@ -962,7 +1111,7 @@ function App() {
               }}
             >
               <span className="card-title">
-                <span className="card-icon">📊</span>
+                <span className="card-icon"><TrendingUp size={18} /></span>
                 Income
               </span>
               <div className="card-header-right">
@@ -977,7 +1126,7 @@ function App() {
                     }}
                     aria-label="Add income"
                   >
-                    +
+                    <Plus size={18} />
                   </button>
                 )}
                 <button
@@ -989,7 +1138,7 @@ function App() {
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
-                  {dashboardCollapsed ? '▼' : '▲'}
+                  {dashboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
                 </button>
               </div>
             </div>
@@ -1008,18 +1157,18 @@ function App() {
                             onClick={() => openEditIncome(income)}
                             title="Edit income"
                           >
-                            ✏️
+                            <Pencil size={14} />
                           </button>
                           <button
                             className="btn-icon"
                             onClick={() => deleteIncome(income.id)}
                             title="Delete income"
                           >
-                            🗑️
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </div>
-                      {income.isPrimary && <span className="primary-badge">⭐ Primary</span>}
+                      {income.isPrimary && <span className="primary-badge"><Star size={11} /> Primary</span>}
                       <div className="income-amount">{formatCurrency(income.amount)}</div>
                       <div className="income-details">
                         {income.frequency} · Next: {formatDate(income.dueDate)}
@@ -1035,7 +1184,7 @@ function App() {
 
                 {/* Inline total income */}
                 <div className="card-footer-summary income-footer">
-                  <div className="summary-icon">📈</div>
+                  <div className="summary-icon"><TrendingUp size={20} /></div>
                   <div className="summary-footer-text">
                     <div className="summary-label">Total Income</div>
                     <div className="summary-amount">{formatCurrency(totalIncome)}</div>
@@ -1064,7 +1213,7 @@ function App() {
               }}
             >
               <span className="card-title">
-                <span className="card-icon">📋</span>
+                <span className="card-icon"><WalletCards size={18} /></span>
                 Expenditure
               </span>
               <div className="card-header-right">
@@ -1080,7 +1229,7 @@ function App() {
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
-                  {dashboardCollapsed ? '▼' : '▲'}
+                  {dashboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
                 </button>
               </div>
             </div>
@@ -1089,7 +1238,7 @@ function App() {
               <>
                 {/* Combined payday + left-to-go-out panel */}
                 <div className="card-inline-summary cashflow-box">
-                  <div className="summary-icon">📅</div>
+                  <div className="summary-icon"><CalendarDays size={20} /></div>
                   <div className="summary-footer-text">
                     <div className="summary-label">Cashflow</div>
                     <div className="summary-subtext">
@@ -1126,7 +1275,7 @@ function App() {
                     <span className="section-name">Allowances</span>
                     <div className="section-right">
                       <span className="section-total">{formatCurrency(totalAllowances)}</span>
-                      <span className={`expand-icon ${allowancesExpanded ? 'expanded' : ''}`}>▲</span>
+                      <span className={`expand-icon ${allowancesExpanded ? 'expanded' : ''}`}><ChevronUp size={15} /></span>
                     </div>
                   </div>
                   {allowancesExpanded && (
@@ -1181,7 +1330,7 @@ function App() {
                           disabled={isSavingAllowances || !allowancesDirty}
                           title={supabaseEnabled ? 'Save allowances to Supabase' : 'Save allowances locally'}
                         >
-                          {isSavingAllowances ? 'Saving…' : '💾 Save Allowances'}
+                          {isSavingAllowances ? 'Saving…' : 'Save allowances'}
                         </button>
                         <div className="allowance-status" aria-live="polite">
                           {supabaseEnabled && !allowancesLoaded ? (
@@ -1217,7 +1366,7 @@ function App() {
                     <span className="section-name">Expenses</span>
                     <div className="section-right">
                       <span className="section-total">{formatCurrency(totalExpenses)}</span>
-                      <span className={`expand-icon ${expensesBreakdownExpanded ? 'expanded' : ''}`}>▲</span>
+                      <span className={`expand-icon ${expensesBreakdownExpanded ? 'expanded' : ''}`}><ChevronUp size={15} /></span>
                     </div>
                   </div>
                   {expensesBreakdownExpanded && (
@@ -1225,7 +1374,7 @@ function App() {
                       <div className="breakdown-label">Breakdown by Account</div>
                       {Object.entries(expensesByAccount).map(([account, amount]) => (
                         <div key={account} className="account-breakdown-item">
-                          <span className="account-icon">💳</span>
+                          <span className="account-icon"><WalletCards size={14} /></span>
                           <span className="account-name">{account}</span>
                           <span className="account-amount">{formatCurrency(amount)}</span>
                         </div>
@@ -1236,7 +1385,7 @@ function App() {
 
                 {/* Inline total expenses box to mirror income */}
                 <div className="card-footer-summary expenses-footer">
-                  <div className="summary-icon">📉</div>
+                  <div className="summary-icon"><TrendingDown size={20} /></div>
                   <div className="summary-footer-text">
                     <div className="summary-label">Total Expenditure</div>
                     <div className="summary-amount">{formatCurrency(totalExpenditure)}</div>
@@ -1265,7 +1414,7 @@ function App() {
               }}
             >
               <span className="card-title">
-                <span className="card-icon">🧭</span>
+                <span className="card-icon"><Sparkles size={18} /></span>
                 Spending by Category
               </span>
               <div className="card-header-right">
@@ -1281,7 +1430,7 @@ function App() {
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
-                  {dashboardCollapsed ? '▼' : '▲'}
+                  {dashboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
                 </button>
               </div>
             </div>
@@ -1358,7 +1507,7 @@ function App() {
               }}
             >
               <span className="card-title">
-                <span className="card-icon">💰</span>
+                <span className="card-icon"><PiggyBank size={18} /></span>
                 Savings
               </span>
               <div className="card-header-right">
@@ -1373,7 +1522,7 @@ function App() {
                     }}
                     aria-label="Add savings account"
                   >
-                    +
+                    <Plus size={18} />
                   </button>
                 )}
                 <button
@@ -1385,7 +1534,7 @@ function App() {
                   title={dashboardCollapsed ? 'Expand dashboard' : 'Collapse dashboard'}
                   aria-expanded={!dashboardCollapsed}
                 >
-                  {dashboardCollapsed ? '▼' : '▲'}
+                  {dashboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
                 </button>
               </div>
             </div>
@@ -1409,14 +1558,14 @@ function App() {
                               onClick={() => openEditSavings(account)}
                               title="Edit account"
                             >
-                              ✏️
+                              <Pencil size={14} />
                             </button>
                             <button
                               className="btn-icon"
                               onClick={() => deleteSavingsAccount(account.id)}
                               title="Delete account"
                             >
-                              🗑️
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </div>
@@ -1424,10 +1573,10 @@ function App() {
                         <div className="savings-account-balance">{formatCurrency(account.balance)}</div>
                         <div className="savings-account-interest">
                           {account.isVariableRate ? (
-                            <>📈 Variable</>
+                            <>Variable return</>
                           ) : (
                             <>
-                              📈 {account.interestRate}% • {formatCurrency(monthlyInterest)}/mo interest payable
+                              {account.interestRate}% • {formatCurrency(monthlyInterest)}/mo interest payable
                             </>
                           )}
                         </div>
@@ -1443,7 +1592,7 @@ function App() {
 
                 {/* Total Savings Footer */}
                 <div className="card-footer-summary savings-footer">
-                  <div className="summary-icon">🐷</div>
+                  <div className="summary-icon"><PiggyBank size={20} /></div>
                   <div className="summary-footer-text">
                     <div className="summary-label">Total Savings</div>
                     <div className="summary-amount">{formatCurrency(totalSavings)}</div>
@@ -1471,8 +1620,8 @@ function App() {
             }}
           >
             <h2 className="section-title">
-              <span>📋</span>
-              All Expenses
+              <span><ReceiptText size={21} /></span>
+              Monthly expenses
             </h2>
             <div className="section-actions">
               {!expensesCollapsed && (
@@ -1484,7 +1633,7 @@ function App() {
                   }}
                   aria-label="Add expense"
                 >
-                  +
+                  <Plus size={18} />
                 </button>
               )}
               <button
@@ -1497,7 +1646,7 @@ function App() {
                 aria-expanded={!expensesCollapsed}
                 aria-controls="all-expenses-content"
               >
-                {expensesCollapsed ? '▼' : '▲'}
+                {expensesCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
               </button>
             </div>
           </div>
@@ -1505,12 +1654,12 @@ function App() {
           {!expensesCollapsed && (
             <div id="all-expenses-content">
               <div className="table-controls">
-                <button className="btn-control" onClick={exportToExcel}>📤 Export</button>
-                <button className="btn-control" onClick={newCycle}>🔄 New Cycle</button>
-                <button className="btn-control" onClick={markAllUnpaid}>☑️ Mark All Unpaid</button>
-                <button className="btn-control" onClick={markAllPaid}>✅ Mark All Paid</button>
+                <button className="btn-control" onClick={exportToExcel}><Download size={15} /> Export</button>
+                <button className="btn-control" onClick={newCycle}><RotateCcw size={15} /> New cycle</button>
+                <button className="btn-control" onClick={markAllUnpaid}>Mark all unpaid</button>
+                <button className="btn-control" onClick={markAllPaid}>Mark all paid</button>
                 <div className="date-range">
-                  <span style={{ color: 'var(--text-secondary)' }}>📅 Filter by Date Range:</span>
+                  <span className="date-range-label"><CalendarDays size={15} /> Date range</span>
                   <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
                   <span style={{ color: 'var(--text-muted)' }}>to</span>
                   <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
@@ -1519,7 +1668,7 @@ function App() {
                     onClick={() => { setFromDate(''); setToDate(''); }}
                     title="Clear date range"
                   >
-                    ✖️ Clear
+                    Clear
                   </button>
                 </div>
               </div>
@@ -1606,7 +1755,7 @@ function App() {
                                 title="Edit"
                                 aria-label="Edit"
                               >
-                                ✏️
+                                <Pencil size={13} />
                               </button>
                               <button
                                 className="btn-delete"
@@ -1614,7 +1763,7 @@ function App() {
                                 title="Delete"
                                 aria-label="Delete"
                               >
-                                🗑️
+                                <Trash2 size={13} />
                               </button>
                             </div>
                           </div>
@@ -1639,9 +1788,9 @@ function App() {
                           </span>
                         </td>
                         <td data-label="Actions">
-                          <button className="btn-edit" onClick={() => openEditExpense(expense)}>✏️</button>
+                          <button className="btn-edit" onClick={() => openEditExpense(expense)} aria-label="Edit expense"><Pencil size={13} /></button>
                           <button className="btn-delete" onClick={() => requestDeleteExpense(expense.id)}>
-                            🗑️
+                            <Trash2 size={13} />
                           </button>
                         </td>
                       </tr>
@@ -1652,7 +1801,10 @@ function App() {
             </div>
           )}
         </div>
-      </main>
+        </>
+        )}
+        </main>
+      </div>
 
       {/* Modals */}
       <AddExpenseModal
@@ -1686,7 +1838,7 @@ function App() {
           <div className="undo-content">
             <span>New cycle applied! Undo in {undoTimer}s</span>
             <button className="btn-undo" onClick={undoNewCycle}>
-              ↶ Undo
+              <Undo2 size={14} /> Undo
             </button>
           </div>
         </div>
@@ -1696,13 +1848,13 @@ function App() {
       {showNewCycleConfirm && (
         <div className="modal-overlay" onClick={() => setShowNewCycleConfirm(false)}>
           <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">🔄</div>
+            <div className="confirm-icon"><RotateCcw size={22} /></div>
             <h2 className="confirm-title">Start New Cycle?</h2>
             <p className="confirm-message">
               This will mark all expenses as <strong>unpaid</strong> and increment their due dates based on frequency.
             </p>
             <div className="confirm-warning">
-              <span className="warning-icon">⚠️</span>
+              <span className="warning-icon"><AlertTriangle size={16} /></span>
               <span>You'll have 10 seconds to undo this action</span>
             </div>
             <div className="confirm-actions">
@@ -1716,7 +1868,7 @@ function App() {
                 className="btn-confirm-proceed" 
                 onClick={confirmNewCycle}
               >
-                Let's Go! 🚀
+                Start new cycle
               </button>
             </div>
           </div>
@@ -1733,11 +1885,11 @@ function App() {
           }}
         >
           <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-icon">🗑️</div>
+            <div className="confirm-icon"><Trash2 size={22} /></div>
             <h2 className="confirm-title">Delete Expense?</h2>
             <p className="confirm-message">This will permanently delete the expense.</p>
             <div className="confirm-warning">
-              <span className="warning-icon">⚠️</span>
+              <span className="warning-icon"><AlertTriangle size={16} /></span>
               <span>This action can't be undone</span>
             </div>
             <div className="confirm-actions">

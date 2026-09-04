@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CalendarDays, Check, Plus, X } from 'lucide-react';
 import type { Expense, Frequency } from '../types/expense';
 import { categories, frequencies } from '../types/expense';
 
@@ -130,7 +131,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">{editingExpense ? 'Edit Expense' : 'Add Expense'}</h2>
-          <button className="btn-close" onClick={onClose}>×</button>
+          <button className="btn-close" onClick={onClose} aria-label="Close"><X size={19} /></button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -167,7 +168,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
           <div className="form-group">
             <label className="form-label">Next Due Date</label>
             <div className="input-with-icon">
-              <span className="input-icon">📅</span>
+              <span className="input-icon"><CalendarDays size={16} /></span>
               <input
                 type="date"
                 className="form-input"
@@ -205,10 +206,10 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
                   autoFocus
                 />
                 <button type="button" className="btn-add-option" onClick={handleAddAccount}>
-                  ✓
+                  <Check size={16} />
                 </button>
                 <button type="button" className="btn-add-option" onClick={() => setShowAccountInput(false)}>
-                  ✕
+                  <X size={16} />
                 </button>
               </div>
             ) : (
@@ -222,7 +223,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
                     <option key={acc} value={acc}>{acc}</option>
                   ))}
                 </select>
-                <button type="button" className="btn-add-option" onClick={() => setShowAccountInput(true)}>+</button>
+                <button type="button" className="btn-add-option" onClick={() => setShowAccountInput(true)} aria-label="Add account"><Plus size={16} /></button>
               </div>
             )}
           </div>
@@ -240,10 +241,10 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
                   autoFocus
                 />
                 <button type="button" className="btn-add-option" onClick={handleAddCategory}>
-                  ✓
+                  <Check size={16} />
                 </button>
                 <button type="button" className="btn-add-option" onClick={() => setShowCategoryInput(false)}>
-                  ✕
+                  <X size={16} />
                 </button>
               </div>
             ) : (
@@ -257,7 +258,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
-                <button type="button" className="btn-add-option" onClick={() => setShowCategoryInput(true)}>+</button>
+                <button type="button" className="btn-add-option" onClick={() => setShowCategoryInput(true)} aria-label="Add category"><Plus size={16} /></button>
               </div>
             )}
           </div>

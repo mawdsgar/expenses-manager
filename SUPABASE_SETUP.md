@@ -154,3 +154,18 @@ alter publication supabase_realtime add table allowances;
 - Confirm your anon key is correct
 
 **Need help?** Check the Supabase docs at [supabase.com/docs](https://supabase.com/docs)
+
+## Renovation planner tables
+
+The renovation planner has a ready-to-run migration at:
+
+`supabase/migrations/202607260001_create_renovation_planner.sql`
+
+Run that file in the Supabase SQL Editor (or with the Supabase CLI if this
+project is linked). It creates and seeds the shared Derby Road plan from July
+2026 to June 2028, including editable monthly savings and the outstanding work
+from the planning spreadsheet.
+
+Until those tables exist, the planner deliberately falls back to local browser
+storage so the page remains usable. Once installed, both household users see
+the same plan.
