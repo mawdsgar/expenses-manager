@@ -1,7 +1,6 @@
 import { monthRange } from './seed';
 import type {
   ForecastMonth,
-  RenovationContribution,
   RenovationSettings,
   RenovationTask,
 } from './types';
@@ -30,20 +29,16 @@ const paymentInMonth = (task: RenovationTask, month: string) => {
 export const buildForecast = (
   currentSavings: number,
   tasks: RenovationTask[],
-  contributions: RenovationContribution[],
   settings: RenovationSettings,
 ): ForecastMonth[] => {
   let balance = currentSavings;
   return monthRange(settings.planStart, settings.planEnd).map((month) => {
-    const contribution = contributions
-      .filter((item) => item.month === month && item.status === 'planned')
-      .reduce((sum, item) => sum + item.amount, 0);
     const monthTasks = tasks
       .filter((item) => item.scheduledMonth === month)
       .sort(compareTasksByTimeline);
     const spending = tasks.reduce((sum, item) => sum + paymentInMonth(item, month), 0);
-    balance += contribution - spending;
-    return { month, contribution, spending, endingBalance: balance, tasks: monthTasks };
+    balance -= spending;
+    return { month, spending, endingBalance: balance, tasks: monthTasks };
   });
 };
 

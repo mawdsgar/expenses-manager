@@ -10,7 +10,6 @@ import {
   ClipboardList,
   GripVertical,
   HardHat,
-  Pencil,
   PiggyBank,
   Pin,
   Plus,
@@ -31,7 +30,6 @@ import {
 } from './forecast';
 import { monthRange } from './seed';
 import type {
-  RenovationContribution,
   RenovationStatus,
   RenovationTask,
 } from './types';
@@ -87,20 +85,15 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     saveTask,
     saveTasks,
     deleteTask,
-    saveContribution,
     saveSettings,
   } = useRenovationData();
-  const { tasks, contributions, settings } = data;
+  const { tasks, settings } = data;
   const [notice, setNotice] = useState(
     'Drag a job onto a month. I’ll be the boring one who checks the maths.',
   );
   const [noticeTone, setNoticeTone] = useState<'info' | 'warning' | 'success'>('info');
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [queueDropId, setQueueDropId] = useState<string | null>(null);
-  const [editingContribution, setEditingContribution] = useState<string | null>(null);
-  const [contributionDraft, setContributionDraft] = useState('0');
-  const [contributionStatus, setContributionStatus] =
-    useState<RenovationContribution['status']>('planned');
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskDraft, setTaskDraft] = useState<RenovationTask>(emptyTask(settings.planStart));
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -110,8 +103,8 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     [settings.planEnd, settings.planStart],
   );
   const forecast = useMemo(
-    () => buildForecast(currentSavings, tasks, contributions, settings),
-    [contributions, currentSavings, settings, tasks],
+    () => buildForecast(currentSavings, tasks, settings),
+    [currentSavings, settings, tasks],
   );
   const plannedWork = tasks
     .filter((task) => task.status !== 'complete')
@@ -131,34 +124,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   const activeTasks = timelineOrderedTasks.filter((task) => task.status !== 'complete');
   const completedTasks = timelineOrderedTasks.filter((task) => task.status === 'complete');
   const completedCount = completedTasks.length;
-
-  const contributionFor = (month: string) =>
-    contributions.find((item) => item.month === month) ?? {
-      id: crypto.randomUUID(),
-      month,
-      amount: month.endsWith('-12') ? 0 : 1800,
-      status: 'planned' as const,
-    };
-
-  const openContributionEditor = (month: string) => {
-    const contribution = contributionFor(month);
-    setEditingContribution(month);
-    setContributionDraft(String(contribution.amount));
-    setContributionStatus(contribution.status);
-  };
-
-  const commitContribution = () => {
-    if (!editingContribution) return;
-    const existing = contributionFor(editingContribution);
-    saveContribution({
-      ...existing,
-      amount: Math.max(0, Number(contributionDraft) || 0),
-      status: contributionStatus,
-    });
-    setEditingContribution(null);
-    setNotice('Monthly savings updated. The timeline has done its sums again.');
-    setNoticeTone('success');
-  };
 
   const attemptMove = (taskId: string, month: string) => {
     const task = tasks.find((item) => item.id === taskId);
@@ -267,14 +232,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   const extendPlan = () => {
     const nextEnd = addMonths(settings.planEnd, 6);
     saveSettings({ ...settings, planEnd: nextEnd });
-    for (const month of monthRange(addMonths(settings.planEnd, 1), nextEnd)) {
-      saveContribution({
-        id: crypto.randomUUID(),
-        month,
-        amount: month.endsWith('-12') ? 0 : 1800,
-        status: 'planned',
-      });
-    }
     setNotice(`Plan extended to ${formatMonth(nextEnd)}. Optimism, but with room for snagging.`);
     setNoticeTone('success');
   };
@@ -284,9 +241,9 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     const candidate = taskDraft.id
       ? tasks.map((task) => (task.id === taskDraft.id ? taskDraft : task))
       : [...tasks, { ...taskDraft, id: 'preview' }];
-    const preview = buildForecast(currentSavings, candidate, contributions, settings);
+    const preview = buildForecast(currentSavings, candidate, settings);
     return lowestForecast(preview, currentSavings);
-  }, [contributions, currentSavings, settings, showTaskModal, taskDraft, tasks]);
+  }, [currentSavings, settings, showTaskModal, taskDraft, tasks]);
 
   return (
     <div className="renovation-planner">
@@ -341,7 +298,7 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           <div className="timeline-toolbar">
             <div>
               <h2>Timeline</h2>
-              <span>Savings are set month by month · scrolls through {formatMonth(settings.planEnd)}</span>
+              <span>Costs are scheduled month by month · scrolls through {formatMonth(settings.planEnd)}</span>
             </div>
             <div className="timeline-actions">
               <button onClick={() => timelineRef.current?.scrollBy({ left: -900, behavior: 'smooth' })} aria-label="Earlier months">
@@ -357,8 +314,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           <div className="timeline-scroll" ref={timelineRef}>
             <div className="timeline-grid" style={{ gridTemplateColumns: `repeat(${months.length}, 226px)` }}>
               {forecast.map((monthData) => {
-                const contribution = contributionFor(monthData.month);
-                const isEditing = editingContribution === monthData.month;
                 return (
                   <article
                     key={monthData.month}
@@ -368,55 +323,7 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                   >
                     <header>
                       <strong>{formatMonth(monthData.month, true)}</strong>
-                      {!isEditing && (
-                        <button onClick={() => openContributionEditor(monthData.month)} aria-label={`Edit savings for ${formatMonth(monthData.month)}`}>
-                          <Pencil size={13} />
-                        </button>
-                      )}
                     </header>
-                    {isEditing ? (
-                      <div className="contribution-editor">
-                        <label>
-                          Savings added
-                          <span className="compact-money-input">
-                            <span>£</span>
-                            <input
-                              autoFocus
-                              type="number"
-                              min="0"
-                              step="100"
-                              value={contributionDraft}
-                              onChange={(event) => setContributionDraft(event.target.value)}
-                            />
-                          </span>
-                        </label>
-                        <label>
-                          Treatment
-                          <select
-                            value={contributionStatus}
-                            onChange={(event) =>
-                              setContributionStatus(event.target.value as RenovationContribution['status'])
-                            }
-                          >
-                            <option value="planned">Still to come</option>
-                            <option value="received">Already in live balance</option>
-                          </select>
-                        </label>
-                        <div>
-                          <button onClick={() => setEditingContribution(null)}>Cancel</button>
-                          <button className="save" onClick={commitContribution}>Save</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        className={`contribution-pill ${contribution.status === 'received' ? 'received' : ''}`}
-                        onClick={() => openContributionEditor(monthData.month)}
-                      >
-                        {contribution.status === 'received'
-                          ? 'Already in balance'
-                          : `+${money(contribution.amount)}`}
-                      </button>
-                    )}
                     <div className="month-task-list">
                       {monthData.tasks.map((task) => (
                         <button

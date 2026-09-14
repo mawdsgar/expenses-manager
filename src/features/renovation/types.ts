@@ -41,7 +41,6 @@ export interface RenovationData {
 
 export interface ForecastMonth {
   month: string;
-  contribution: number;
   spending: number;
   endingBalance: number;
   tasks: RenovationTask[];
