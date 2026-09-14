@@ -10,10 +10,12 @@ export const taskTotal = (task: RenovationTask) =>
   task.estimatedCost * (1 + task.contingencyPercent / 100);
 
 export const taskPaid = (task: RenovationTask) =>
-  Math.max(0, Math.min(task.partPaymentsAmount, taskTotal(task)));
+  task.status === 'complete'
+    ? taskTotal(task)
+    : Math.max(0, Math.min(task.partPaymentsAmount, taskTotal(task)));
 
 export const taskRemaining = (task: RenovationTask) =>
-  Math.max(0, taskTotal(task) - taskPaid(task));
+  task.status === 'complete' ? 0 : Math.max(0, taskTotal(task) - taskPaid(task));
 
 export const compareTasksByTimeline = (a: RenovationTask, b: RenovationTask) =>
   a.scheduledMonth.localeCompare(b.scheduledMonth) ||
