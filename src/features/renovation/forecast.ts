@@ -9,6 +9,12 @@ import type {
 export const taskTotal = (task: RenovationTask) =>
   task.estimatedCost * (1 + task.contingencyPercent / 100);
 
+export const taskPaid = (task: RenovationTask) =>
+  Math.max(0, Math.min(task.partPaymentsAmount, taskTotal(task)));
+
+export const taskRemaining = (task: RenovationTask) =>
+  Math.max(0, taskTotal(task) - taskPaid(task));
+
 export const compareTasksByTimeline = (a: RenovationTask, b: RenovationTask) =>
   a.scheduledMonth.localeCompare(b.scheduledMonth) ||
   a.sortOrder - b.sortOrder ||
@@ -16,14 +22,7 @@ export const compareTasksByTimeline = (a: RenovationTask, b: RenovationTask) =>
 
 const paymentInMonth = (task: RenovationTask, month: string) => {
   if (task.status === 'complete') return 0;
-  const total = taskTotal(task);
-  const validDeposit = Math.max(0, Math.min(task.depositAmount, total));
-  let payment = 0;
-  if (task.depositMonth === month) payment += validDeposit;
-  if (task.scheduledMonth === month) {
-    payment += task.depositMonth ? total - validDeposit : total;
-  }
-  return payment;
+  return task.scheduledMonth === month ? taskRemaining(task) : 0;
 };
 
 export const buildForecast = (

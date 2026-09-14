@@ -27,8 +27,8 @@ const taskToRow = (task: RenovationTask) => ({
   sort_order: task.sortOrder,
   pinned: task.pinned,
   contingency_percent: task.contingencyPercent,
-  deposit_amount: task.depositAmount,
-  deposit_month: task.depositMonth ? `${task.depositMonth}-01` : null,
+  // Keep using the existing column so saved plans survive the UI terminology change.
+  deposit_amount: task.partPaymentsAmount,
   depends_on: task.dependsOn,
   notes: task.notes,
 });
@@ -43,8 +43,7 @@ const rowToTask = (row: Record<string, unknown>): RenovationTask => ({
   sortOrder: Number(row.sort_order),
   pinned: Boolean(row.pinned),
   contingencyPercent: Number(row.contingency_percent ?? 0),
-  depositAmount: Number(row.deposit_amount ?? 0),
-  depositMonth: row.deposit_month ? String(row.deposit_month).slice(0, 7) : null,
+  partPaymentsAmount: Number(row.part_payments_amount ?? row.deposit_amount ?? 0),
   dependsOn: row.depends_on ? String(row.depends_on) : null,
   notes: String(row.notes ?? ''),
 });
@@ -64,14 +63,27 @@ const settingsToRow = (settings: RenovationSettings) => ({
   plan_end: `${settings.planEnd}-01`,
 });
 
+type StoredTask = RenovationTask & {
+  depositAmount?: number;
+  depositMonth?: string | null;
+};
+
+const normalizeTask = (task: StoredTask): RenovationTask => ({
+  ...task,
+  // Existing local plans used the deposit field; carry that value forward as
+  // part-payments when the planner is upgraded.
+  partPaymentsAmount: Number(task.partPaymentsAmount ?? task.depositAmount ?? 0),
+});
+
 export const useRenovationData = () => {
   const [data, setData] = useState<RenovationData>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return cloneSeed();
     try {
-      const parsed = JSON.parse(saved) as RenovationData;
+      const parsed = JSON.parse(saved) as RenovationData & { tasks: StoredTask[] };
       return {
         ...parsed,
+        tasks: parsed.tasks.map(normalizeTask),
         settings: {
           ...parsed.settings,
           safetyBuffer: parsed.settings?.safetyBuffer ?? 2500,

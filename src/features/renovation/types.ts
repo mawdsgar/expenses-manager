@@ -15,8 +15,7 @@ export interface RenovationTask {
   sortOrder: number;
   pinned: boolean;
   contingencyPercent: number;
-  depositAmount: number;
-  depositMonth: string | null;
+  partPaymentsAmount: number;
   dependsOn: string | null;
   notes: string;
 }

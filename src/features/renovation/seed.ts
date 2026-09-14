@@ -17,8 +17,7 @@ const task = (
   sortOrder,
   pinned: false,
   contingencyPercent: 0,
-  depositAmount: 0,
-  depositMonth: null,
+  partPaymentsAmount: 0,
   dependsOn: null,
   notes: '',
 });

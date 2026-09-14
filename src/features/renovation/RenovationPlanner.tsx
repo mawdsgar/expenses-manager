@@ -25,6 +25,8 @@ import {
   formatMonth,
   lowestForecast,
   rebuildTimelineFromOrder,
+  taskPaid,
+  taskRemaining,
   taskTotal,
 } from './forecast';
 import { monthRange } from './seed';
@@ -64,8 +66,7 @@ const emptyTask = (month: string): RenovationTask => ({
   sortOrder: 0,
   pinned: false,
   contingencyPercent: 0,
-  depositAmount: 0,
-  depositMonth: null,
+  partPaymentsAmount: 0,
   dependsOn: null,
   notes: '',
 });
@@ -115,7 +116,7 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   const lowest = lowestForecast(forecast, currentSavings);
   const plannedWork = tasks
     .filter((task) => task.status !== 'complete')
-    .reduce((sum, task) => sum + taskTotal(task), 0);
+    .reduce((sum, task) => sum + taskRemaining(task), 0);
   const completedWork = tasks
     .filter((task) => task.status === 'complete')
     .reduce((sum, task) => sum + taskTotal(task), 0);
@@ -238,7 +239,10 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
       id: taskDraft.id || crypto.randomUUID(),
       estimatedCost: Math.max(0, Number(taskDraft.estimatedCost) || 0),
       contingencyPercent: Math.max(0, Number(taskDraft.contingencyPercent) || 0),
-      depositAmount: Math.max(0, Number(taskDraft.depositAmount) || 0),
+      partPaymentsAmount: Math.max(
+        0,
+        Math.min(Number(taskDraft.partPaymentsAmount) || 0, taskTotal(taskDraft)),
+      ),
       sortOrder: taskDraft.id ? taskDraft.sortOrder : tasks.length,
       pinned:
         taskDraft.status === 'complete'
@@ -426,7 +430,14 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                           {task.status === 'complete'
                             ? <CircleCheck size={15} className="task-complete-icon" />
                             : <GripVertical size={14} />}
-                          <span><strong>{task.title}</strong><small>{money(taskTotal(task))}</small></span>
+                          <span className="task-card-content">
+                            <strong>{task.title}</strong>
+                            <span className="task-card-costs">
+                              <span><small>Estimate</small>{money(taskTotal(task))}</span>
+                              <span><small>Paid</small>{money(taskPaid(task))}</span>
+                              <span><small>Remaining</small>{money(taskRemaining(task))}</span>
+                            </span>
+                          </span>
                           {task.status !== 'complete' && task.pinned && (
                             <Pin size={13} className="task-pin" />
                           )}
@@ -481,11 +492,13 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
               >
                 <GripVertical size={15} />
                 <span className="queue-number">{index + 1}</span>
-                <button className="queue-task-main" onClick={() => openEditTask(task)}>
-                  <strong>{task.title}</strong>
-                  <span>
-                    {money(taskTotal(task))} · {formatMonth(task.scheduledMonth, true)}
-                    {task.pinned ? ' · Booked / fixed' : ''}
+                  <button className="queue-task-main" onClick={() => openEditTask(task)}>
+                    <strong>{task.title}</strong>
+                  <span className="queue-task-costs">
+                    <span>Estimate {money(taskTotal(task))}</span>
+                    <span>Paid {money(taskPaid(task))}</span>
+                    <span>Remaining {money(taskRemaining(task))}</span>
+                    <span>· {formatMonth(task.scheduledMonth, true)}{task.pinned ? ' · Booked / fixed' : ''}</span>
                   </span>
                 </button>
                 <div className="queue-controls">
@@ -521,7 +534,12 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                     <CircleCheck size={15} />
                     <button className="queue-task-main" onClick={() => openEditTask(task)}>
                       <strong>{task.title}</strong>
-                      <span>{money(taskTotal(task))} · {formatMonth(task.scheduledMonth, true)}</span>
+                      <span className="queue-task-costs">
+                        <span>Estimate {money(taskTotal(task))}</span>
+                        <span>Paid {money(taskPaid(task))}</span>
+                        <span>Remaining {money(taskRemaining(task))}</span>
+                        <span>· {formatMonth(task.scheduledMonth, true)}</span>
+                      </span>
                     </button>
                   </div>
                 ))}
@@ -621,24 +639,14 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                 />
               </label>
               <label>
-                Optional deposit £
+                Total Part-Payments made
                 <input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={taskDraft.depositAmount || ''}
-                  onChange={(event) => setTaskDraft({ ...taskDraft, depositAmount: Number(event.target.value) })}
+                  value={taskDraft.partPaymentsAmount || ''}
+                  onChange={(event) => setTaskDraft({ ...taskDraft, partPaymentsAmount: Number(event.target.value) })}
                   placeholder="0"
-                />
-              </label>
-              <label>
-                Deposit month
-                <input
-                  type="month"
-                  min={settings.planStart}
-                  max={settings.planEnd}
-                  value={taskDraft.depositMonth ?? ''}
-                  onChange={(event) => setTaskDraft({ ...taskDraft, depositMonth: event.target.value || null })}
                 />
               </label>
               <label>
@@ -682,6 +690,14 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                 Booked in — keep this month fixed
               </label>
             </div>
+            <section className="task-payment-summary" aria-label="Payment summary">
+              <h3>Payment summary</h3>
+              <div>
+                <span><small>Estimated cost</small><strong>{money(taskTotal(taskDraft))}</strong></span>
+                <span><small>Paid so far</small><strong>{money(taskPaid(taskDraft))}</strong></span>
+                <span><small>Remaining</small><strong>{money(taskRemaining(taskDraft))}</strong></span>
+              </div>
+            </section>
             {modalForecast !== null && (
               <div className={`modal-forecast ${modalForecast < 0 ? 'unsafe' : ''}`}>
                 <CalendarRange size={18} />

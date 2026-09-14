@@ -397,6 +397,27 @@
 .month-task small { min-width: 0; display: block; }
 .month-task strong { overflow: hidden; font-size: 11px; line-height: 1.25; text-overflow: ellipsis; }
 .month-task small { margin-top: 4px; color: var(--text-secondary); font-size: 11px; }
+.month-task .task-card-content { overflow: hidden; }
+.month-task .task-card-costs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.2;
+}
+.month-task .task-card-costs > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.month-task .task-card-costs small {
+  margin: 0 0 2px;
+  overflow: visible;
+  color: var(--text-secondary);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
 .month-task.complete {
   border-color: #9dd4bb;
   background: var(--green-soft);
@@ -525,6 +546,18 @@
 
 .queue-task-main strong { color: var(--text); font-size: 11px; }
 .queue-task-main span { margin-top: 2px; color: var(--text-secondary); font-size: 10px; }
+.queue-task-main .queue-task-costs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 7px;
+  margin-top: 3px;
+  overflow: visible;
+  color: var(--text-secondary);
+  line-height: 1.25;
+  text-overflow: clip;
+  white-space: normal;
+}
+.queue-task-main .queue-task-costs span { display: inline; margin-top: 0; }
 
 .queue-controls {
   display: grid;
@@ -767,6 +800,41 @@
 
 .modal-forecast.unsafe { color: #8a321f; border-color: #efb3a8; background: #fff7f5; }
 
+.task-payment-summary {
+  margin: 0 24px 14px;
+  padding: 12px;
+  border: 1px solid #c9d7e4;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.task-payment-summary h3 {
+  margin: 0 0 9px;
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.task-payment-summary > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.task-payment-summary > div > span { min-width: 0; }
+.task-payment-summary small,
+.task-payment-summary strong { display: block; }
+.task-payment-summary small {
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.task-payment-summary strong {
+  margin-top: 3px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
 .renovation-modal > footer {
   display: flex;
   align-items: center;
@@ -840,6 +908,7 @@
   .renovation-modal > header,
   .renovation-form-grid,
   .renovation-modal > footer { padding-left: 16px; padding-right: 16px; }
+  .task-payment-summary { margin-inline: 16px; }
   .renovation-modal > footer { display: grid; }
   .renovation-modal > footer > div { width: 100%; }
   .renovation-modal > footer > div button { flex: 1; }
