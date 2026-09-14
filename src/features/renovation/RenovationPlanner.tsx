@@ -113,10 +113,10 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     () => buildForecast(currentSavings, tasks, contributions, settings),
     [contributions, currentSavings, settings, tasks],
   );
-  const lowest = lowestForecast(forecast, currentSavings);
   const plannedWork = tasks
     .filter((task) => task.status !== 'complete')
     .reduce((sum, task) => sum + taskRemaining(task), 0);
+  const shortfall = currentSavings - plannedWork;
   const completedWork = tasks
     .filter((task) => task.status === 'complete')
     .reduce((sum, task) => sum + taskTotal(task), 0);
@@ -315,10 +315,10 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           <div><strong>{money(completedWork)}</strong><span>Completed Work</span></div>
         </article>
         <article>
-          <span className={`renovation-metric-icon ${lowest < 0 ? 'red' : 'amber'}`}>
+          <span className={`renovation-metric-icon ${shortfall < 0 ? 'red' : 'amber'}`}>
             <CalendarRange size={21} />
           </span>
-          <div><strong>{money(lowest)}</strong><span>Lowest forecast</span></div>
+          <div><strong>{money(shortfall)}</strong><span>Shortfall</span></div>
         </article>
       </section>
 
