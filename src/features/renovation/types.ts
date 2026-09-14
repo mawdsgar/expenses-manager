@@ -45,3 +45,9 @@ export interface ForecastMonth {
   endingBalance: number;
   tasks: RenovationTask[];
 }
+
+export interface TaskFundingGap {
+  task: RenovationTask;
+  unfundedAmount: number;
+  fundedAmount: number;
+}

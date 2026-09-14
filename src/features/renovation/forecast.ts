@@ -3,6 +3,7 @@ import type {
   ForecastMonth,
   RenovationSettings,
   RenovationTask,
+  TaskFundingGap,
 } from './types';
 
 export const taskTotal = (task: RenovationTask) =>
@@ -44,6 +45,30 @@ export const buildForecast = (
 
 export const lowestForecast = (forecast: ForecastMonth[], currentSavings: number) =>
   forecast.length ? Math.min(currentSavings, ...forecast.map((item) => item.endingBalance)) : currentSavings;
+
+export const findFundingGaps = (
+  currentSavings: number,
+  tasks: RenovationTask[],
+): TaskFundingGap[] => {
+  let available = Math.max(0, currentSavings);
+  const gaps: TaskFundingGap[] = [];
+
+  for (const task of [...tasks]
+    .filter((item) => item.status !== 'complete')
+    .sort(compareTasksByTimeline)) {
+    const remaining = taskRemaining(task);
+    const fundedAmount = Math.min(available, remaining);
+    const unfundedAmount = remaining - fundedAmount;
+
+    if (unfundedAmount > 0) {
+      gaps.push({ task, fundedAmount, unfundedAmount });
+    }
+
+    available = Math.max(0, available - remaining);
+  }
+
+  return gaps;
+};
 
 export const rebuildTimelineFromOrder = (
   tasks: RenovationTask[],

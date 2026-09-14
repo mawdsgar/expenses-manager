@@ -21,6 +21,7 @@ import { useMemo, useRef, useState, type DragEvent, type FormEvent } from 'react
 import {
   buildForecast,
   compareTasksByTimeline,
+  findFundingGaps,
   formatMonth,
   lowestForecast,
   rebuildTimelineFromOrder,
@@ -110,6 +111,10 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     .filter((task) => task.status !== 'complete')
     .reduce((sum, task) => sum + taskRemaining(task), 0);
   const shortfall = currentSavings - plannedWork;
+  const fundingGaps = useMemo(
+    () => findFundingGaps(currentSavings, tasks),
+    [currentSavings, tasks],
+  );
   const completedWork = tasks
     .filter((task) => task.status === 'complete')
     .reduce((sum, task) => sum + taskTotal(task), 0);
@@ -271,11 +276,26 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           <span className="renovation-metric-icon green"><CircleCheck size={21} /></span>
           <div><strong>{money(completedWork)}</strong><span>Completed Work</span></div>
         </article>
-        <article>
+        <article className="shortfall-metric">
           <span className={`renovation-metric-icon ${shortfall < 0 ? 'red' : 'amber'}`}>
             <CalendarRange size={21} />
           </span>
-          <div><strong>{money(shortfall)}</strong><span>Shortfall</span></div>
+          <div className="shortfall-metric-content">
+            <strong>{money(shortfall)}</strong>
+            <span>{fundingGaps.length ? 'Cannot currently fund' : 'All planned work funded'}</span>
+            {fundingGaps.length > 0 && (
+              <ul className="funding-gap-list" aria-label="Tasks that cannot currently be funded">
+                {fundingGaps.map(({ task, unfundedAmount, fundedAmount }) => (
+                  <li key={task.id}>
+                    <span>{task.title}</span>
+                    <strong>
+                      {fundedAmount > 0 ? `Partially funded · ${money(unfundedAmount)} short` : `Unfunded · ${money(unfundedAmount)}`}
+                    </strong>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </article>
       </section>
 

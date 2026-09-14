@@ -99,6 +99,39 @@
   font-size: 12px;
 }
 
+.shortfall-metric {
+  align-items: flex-start;
+}
+
+.shortfall-metric-content {
+  min-width: 0;
+}
+
+.funding-gap-list {
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.funding-gap-list li {
+  display: grid;
+  gap: 2px;
+  margin-top: 7px;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.funding-gap-list li:first-child { margin-top: 0; }
+
+.funding-gap-list li strong {
+  color: var(--red-dark);
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0;
+  white-space: normal;
+}
+
 .renovation-metric-icon {
   width: 46px;
   height: 46px;
