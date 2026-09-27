@@ -16,6 +16,7 @@ interface AddExpenseModalProps {
 export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAdd, accounts, onAddAccount, editingExpense, onEdit }) => {
   const [payee, setPayee] = useState('');
   const [amount, setAmount] = useState('');
+  const [paidAmount, setPaidAmount] = useState('0');
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [frequency, setFrequency] = useState<Frequency>('Monthly');
   const [account, setAccount] = useState(accounts[0] || '');
@@ -45,6 +46,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
     if (editingExpense) {
       setPayee(editingExpense.payee);
       setAmount(editingExpense.amount.toString());
+      setPaidAmount((editingExpense.paidAmount ?? (editingExpense.paid ? editingExpense.amount : 0)).toString());
       setDueDate(editingExpense.dueDate);
       setFrequency(editingExpense.frequency);
       setAccount(editingExpense.account);
@@ -53,6 +55,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
       // Reset form when not editing
       setPayee('');
       setAmount('');
+      setPaidAmount('0');
       setDueDate(new Date().toISOString().split('T')[0]);
       setFrequency('Monthly');
       setAccount(accounts[0] || '');
@@ -67,12 +70,21 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
     
     if (!payee || !amount) return;
 
+    const totalAmount = parseFloat(amount);
+    const recordedPaidAmount = Math.min(
+      Math.max(parseFloat(paidAmount) || 0, 0),
+      totalAmount,
+    );
+    const isPaidInFull = totalAmount > 0 && recordedPaidAmount >= totalAmount;
+
     if (editingExpense && onEdit) {
       // Edit mode
       onEdit({
         ...editingExpense,
         payee,
-        amount: parseFloat(amount),
+        amount: totalAmount,
+        paidAmount: recordedPaidAmount,
+        paid: isPaidInFull,
         dueDate,
         frequency,
         account,
@@ -82,18 +94,20 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
       // Add mode
       onAdd({
         payee,
-        amount: parseFloat(amount),
+        amount: totalAmount,
+        paidAmount: recordedPaidAmount,
         dueDate,
         frequency,
         account,
         category,
-        paid: false,
+        paid: isPaidInFull,
       });
     }
 
     // Reset form
     setPayee('');
     setAmount('');
+    setPaidAmount('0');
     setDueDate(new Date().toISOString().split('T')[0]);
     setFrequency('Monthly');
     setAccount(accounts[0] || '');
@@ -125,6 +139,14 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
   };
 
   if (!isOpen) return null;
+
+  const totalAmount = parseFloat(amount) || 0;
+  const recordedPaidAmount = Math.min(Math.max(parseFloat(paidAmount) || 0, 0), totalAmount);
+  const remainingAmount = Math.max(totalAmount - recordedPaidAmount, 0);
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+  }).format(value);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -163,6 +185,35 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
                 style={{ paddingLeft: '2.5rem' }}
               />
             </div>
+          </div>
+
+          <div className="form-group payment-fields">
+            <label className="form-label" htmlFor="paidAmount">Paid so far</label>
+            <div className="payment-input-row">
+              <div className="input-with-icon">
+                <span className="input-icon">£</span>
+                <input
+                  id="paidAmount"
+                  type="number"
+                  className="form-input"
+                  value={paidAmount}
+                  onChange={(e) => setPaidAmount(e.target.value)}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  max={totalAmount || undefined}
+                  style={{ paddingLeft: '2.5rem' }}
+                  aria-describedby="payment-help"
+                />
+              </div>
+              <div className="payment-remaining">
+                <span>Remaining</span>
+                <strong>{formatCurrency(remainingAmount)}</strong>
+              </div>
+            </div>
+            <p className="form-hint" id="payment-help">
+              This payment is recorded against the total expense of {formatCurrency(totalAmount)}.
+            </p>
           </div>
 
           <div className="form-group">

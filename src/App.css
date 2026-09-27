@@ -1061,6 +1061,23 @@ button {
   cursor: pointer;
 }
 
+.payment-status-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 115px;
+}
+
+.payment-status-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
 .account-badge {
   color: var(--blue-dark);
   background: var(--blue-soft);
@@ -1119,6 +1136,20 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.expense-amount-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.expense-amount-remaining {
+  color: var(--green-dark);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .mobile-only {
@@ -1189,6 +1220,44 @@ button {
 
 .form-group {
   min-width: 0;
+}
+
+.payment-fields {
+  grid-column: 1 / -1;
+}
+
+.payment-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.55fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.payment-remaining {
+  min-height: 43px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-soft);
+}
+
+.payment-remaining span,
+.payment-status-copy small,
+.form-hint {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.payment-remaining strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.form-hint {
+  margin: 6px 0 0;
 }
 
 .form-label,
@@ -1702,6 +1771,10 @@ button {
   .modal form {
     grid-template-columns: 1fr;
     padding-inline: 18px;
+  }
+
+  .payment-input-row {
+    grid-template-columns: 1fr;
   }
 
   .modal-header {

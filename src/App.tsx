@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type RefObject } from 'react';
 import type { Expense, Income, SavingsAccount } from './types/expense';
+import { getExpensePaidAmount, getExpenseRemainingAmount, normaliseExpense } from './types/expense';
 import { supabase } from './lib/supabase';
 import { AddExpenseModal } from './components/AddExpenseModal';
 import { AddIncomeModal } from './components/AddIncomeModal';
@@ -40,7 +41,9 @@ function App() {
   );
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const saved = localStorage.getItem('expenses');
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    const parsed = JSON.parse(saved) as Array<Omit<Expense, 'paidAmount'> & { paidAmount?: number }>;
+    return parsed.map(normaliseExpense);
   });
 
   const [incomes, setIncomes] = useState<Income[]>(() => {
@@ -189,14 +192,15 @@ function App() {
         console.error('Failed to load expenses from Supabase:', error.message);
         return;
       }
-      const mapped = (data || []).map((row: any): Expense => ({
+      const mapped = (data || []).map((row: any): Expense => normaliseExpense({
         id: row.id,
         payee: row.payee,
         amount: Number(row.amount),
+        paidAmount: row.paid_amount == null ? undefined : Number(row.paid_amount),
         dueDate: row.due_date,
         frequency: row.frequency,
         category: row.category,
-        paid: row.paid,
+        paid: Boolean(row.paid),
         account: row.account,
       }));
       setExpenses(mapped);
@@ -379,6 +383,7 @@ function App() {
           .insert({
             payee: expense.payee,
             amount: expense.amount,
+            paid_amount: expense.paidAmount,
             due_date: expense.dueDate,
             frequency: expense.frequency,
             category: expense.category,
@@ -391,19 +396,20 @@ function App() {
           console.error('Failed to add expense to Supabase:', error.message);
           return;
         }
-        const newExpense: Expense = {
+        const newExpense: Expense = normaliseExpense({
           id: data.id,
           payee: data.payee,
           amount: Number(data.amount),
+          paidAmount: data.paid_amount == null ? expense.paidAmount : Number(data.paid_amount),
           dueDate: data.due_date,
           frequency: data.frequency,
           category: data.category,
-          paid: data.paid,
+          paid: Boolean(data.paid),
           account: data.account,
-        };
+        });
         setExpenses([...expenses, newExpense]);
       } else {
-        const newExpense: Expense = { ...expense, id: crypto.randomUUID() };
+        const newExpense: Expense = normaliseExpense({ ...expense, id: crypto.randomUUID() });
         setExpenses([...expenses, newExpense]);
       }
     };
@@ -411,19 +417,21 @@ function App() {
   };
 
   const editExpense = (expense: Expense) => {
-    const updateLocal = () => setExpenses(expenses.map((e) => e.id === expense.id ? expense : e));
+    const updatedExpense = normaliseExpense(expense);
+    const updateLocal = () => setExpenses((current) => current.map((e) => e.id === expense.id ? updatedExpense : e));
     const updateRemote = async () => {
       if (!supabaseEnabled) return updateLocal();
       const { error } = await supabase
         .from('expenses')
         .update({
           payee: expense.payee,
-          amount: expense.amount,
-          due_date: expense.dueDate,
-          frequency: expense.frequency,
-          category: expense.category,
-          paid: expense.paid,
-          account: expense.account,
+          amount: updatedExpense.amount,
+          paid_amount: updatedExpense.paidAmount,
+          due_date: updatedExpense.dueDate,
+          frequency: updatedExpense.frequency,
+          category: updatedExpense.category,
+          paid: updatedExpense.paid,
+          account: updatedExpense.account,
         })
         .eq('id', expense.id);
       if (error) console.error('Failed to update expense in Supabase:', error.message);
@@ -631,14 +639,16 @@ function App() {
     if (!expense) return;
     
     const updated = expenses.map((e) =>
-      e.id === id ? { ...e, paid: !e.paid } : e
+      e.id === id
+        ? { ...e, paid: !e.paid, paidAmount: e.paid ? 0 : e.amount }
+        : e
     );
     setExpenses(updated);
 
     if (supabaseEnabled) {
       const { error } = await supabase
         .from('expenses')
-        .update({ paid: !expense.paid })
+        .update({ paid: !expense.paid, paid_amount: expense.paid ? 0 : expense.amount })
         .eq('id', id);
       if (error) console.error('Failed to toggle paid in Supabase:', error.message);
     }
@@ -649,7 +659,9 @@ function App() {
     // Prepare data for Excel export
     const exportData = expenses.map(expense => ({
       Payee: expense.payee,
-      Amount: expense.amount,
+      'Total Amount': expense.amount,
+      'Paid Amount': getExpensePaidAmount(expense),
+      Remaining: getExpenseRemainingAmount(expense),
       'Due Date': new Date(expense.dueDate).toLocaleDateString('en-GB'),
       Frequency: expense.frequency,
       Account: expense.account,
@@ -672,25 +684,32 @@ function App() {
   };
 
   const markAllUnpaid = async () => {
-    const updated = expenses.map(expense => ({ ...expense, paid: false }));
+    const updated = expenses.map(expense => ({ ...expense, paid: false, paidAmount: 0 }));
     setExpenses(updated);
     if (supabaseEnabled) {
       const { error } = await supabase
         .from('expenses')
-        .update({ paid: false })
+        .update({ paid: false, paid_amount: 0 })
         .in('id', expenses.map(e => e.id));
       if (error) console.error('Failed to mark all unpaid in Supabase:', error.message);
     }
   };
 
   const markAllPaid = async () => {
-    const updated = expenses.map(expense => ({ ...expense, paid: true }));
+    const updated = expenses.map(expense => ({ ...expense, paid: true, paidAmount: expense.amount }));
     setExpenses(updated);
     if (supabaseEnabled) {
       const { error } = await supabase
         .from('expenses')
         .update({ paid: true })
         .in('id', expenses.map(e => e.id));
+      for (const expense of expenses) {
+        const { error: paidAmountError } = await supabase
+          .from('expenses')
+          .update({ paid_amount: expense.amount })
+          .eq('id', expense.id);
+        if (paidAmountError) console.error('Failed to mark all expenses paid in Supabase:', paidAmountError.message);
+      }
       if (error) console.error('Failed to mark all paid in Supabase:', error.message);
     }
   };
@@ -706,6 +725,7 @@ function App() {
             .from('expenses')
             .update({
               paid: expense.paid,
+              paid_amount: expense.paidAmount,
               due_date: expense.dueDate,
             })
             .eq('id', expense.id);
@@ -749,6 +769,7 @@ function App() {
       return {
         ...expense,
         paid: false,
+        paidAmount: 0,
         dueDate: newDueDate.toISOString().split('T')[0]
       };
     });
@@ -762,6 +783,7 @@ function App() {
           .from('expenses')
           .update({
             paid: false,
+            paid_amount: 0,
             due_date: expense.dueDate,
           })
           .eq('id', expense.id);
@@ -829,15 +851,15 @@ function App() {
   
   const unpaidExpensesDueBeforePayday = expenses
     .filter(expense => {
-      if (expense.paid) return false;
       if (!nextPaydayDate) return false;
+      if (getExpenseRemainingAmount(expense) <= 0) return false;
       
       const expenseDueDate = new Date(expense.dueDate);
       expenseDueDate.setHours(0, 0, 0, 0);
       // Payday starts the next cashflow cycle, so only count expenses before it.
       return expenseDueDate < nextPaydayDate;
     })
-    .reduce((sum, expense) => sum + expense.amount, 0);
+    .reduce((sum, expense) => sum + getExpenseRemainingAmount(expense), 0);
 
   const leftToGoOut = unpaidExpensesDueBeforePayday;
 
@@ -1737,17 +1759,33 @@ function App() {
                     {sortedExpenses.map((expense) => (
                       <tr key={expense.id}>
                         <td data-label="Paid">
-                          <input
-                            type="checkbox"
-                            className="paid-checkbox"
-                            checked={expense.paid}
-                            onChange={() => togglePaid(expense.id)}
-                          />
+                          <div className="payment-status-cell">
+                            <input
+                              type="checkbox"
+                              className="paid-checkbox"
+                              checked={expense.paid}
+                              onChange={() => togglePaid(expense.id)}
+                              aria-label={`Mark ${expense.payee} as ${expense.paid ? 'unpaid' : 'paid'}`}
+                            />
+                            <span className="payment-status-copy">
+                              <span>{expense.paid ? 'Paid in full' : getExpensePaidAmount(expense) > 0 ? `${formatCurrency(getExpensePaidAmount(expense))} paid` : 'Unpaid'}</span>
+                              {!expense.paid && getExpensePaidAmount(expense) > 0 && (
+                                <small>{formatCurrency(getExpenseRemainingAmount(expense))} remaining</small>
+                              )}
+                            </span>
+                          </div>
                         </td>
                         <td data-label="Payee">{expense.payee}</td>
                         <td data-label="Amount" style={{ fontWeight: 700, color: 'var(--text)' }}>
                           <div className="expense-amount-cell">
-                            <span className="expense-amount-value">{formatCurrency(expense.amount)}</span>
+                            <div className="expense-amount-details">
+                              <span className="expense-amount-value">{formatCurrency(expense.amount)}</span>
+                              {getExpenseRemainingAmount(expense) > 0 && getExpensePaidAmount(expense) > 0 && (
+                                <span className="expense-amount-remaining">
+                                  {formatCurrency(getExpenseRemainingAmount(expense))} remaining
+                                </span>
+                              )}
+                            </div>
                             <div className="expense-mobile-actions mobile-only">
                               <button
                                 className="btn-edit"

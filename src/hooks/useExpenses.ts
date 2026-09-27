@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Expense } from '../types/expense';
+import { normaliseExpense } from '../types/expense';
 
 export const useExpenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -19,13 +20,14 @@ export const useExpenses = () => {
       if (error) throw error;
 
       // Transform snake_case from DB to camelCase for app
-      const transformedExpenses: Expense[] = (data || []).map((item) => ({
+      const transformedExpenses: Expense[] = (data || []).map((item) => normaliseExpense({
         id: item.id,
         payee: item.payee,
-        amount: item.amount,
+        amount: Number(item.amount),
+        paidAmount: item.paid_amount == null ? undefined : Number(item.paid_amount),
         dueDate: item.due_date,
         category: item.category,
-        paid: item.paid,
+        paid: Boolean(item.paid),
         account: item.account,
         frequency: item.frequency || 'Monthly',
       }));
@@ -48,6 +50,7 @@ export const useExpenses = () => {
           {
             payee: expense.payee,
             amount: expense.amount,
+            paid_amount: expense.paidAmount,
             due_date: expense.dueDate,
             category: expense.category,
             paid: expense.paid,
@@ -60,16 +63,17 @@ export const useExpenses = () => {
       if (error) throw error;
 
       // Add to local state
-      const newExpense: Expense = {
+      const newExpense: Expense = normaliseExpense({
         id: data.id,
         payee: data.payee,
-        amount: data.amount,
+        amount: Number(data.amount),
+        paidAmount: data.paid_amount == null ? expense.paidAmount : Number(data.paid_amount),
         dueDate: data.due_date,
         category: data.category,
-        paid: data.paid,
+        paid: Boolean(data.paid),
         account: data.account,
         frequency: data.frequency || 'Monthly',
-      };
+      });
 
       setExpenses([...expenses, newExpense]);
     } catch (err) {
@@ -100,13 +104,15 @@ export const useExpenses = () => {
 
       const { error } = await supabase
         .from('expenses')
-        .update({ paid: !expense.paid })
+        .update({ paid: !expense.paid, paid_amount: expense.paid ? 0 : expense.amount })
         .eq('id', id);
 
       if (error) throw error;
 
       setExpenses(
-        expenses.map((e) => (e.id === id ? { ...e, paid: !e.paid } : e))
+        expenses.map((e) => e.id === id
+          ? { ...e, paid: !e.paid, paidAmount: e.paid ? 0 : e.amount }
+          : e)
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update expense');

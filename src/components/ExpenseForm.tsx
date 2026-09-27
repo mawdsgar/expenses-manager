@@ -25,6 +25,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
     onAddExpense({
       payee,
       amount: parseFloat(amount),
+      paidAmount: paid ? parseFloat(amount) : 0,
       dueDate,
       frequency,
       category,
