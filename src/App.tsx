@@ -1130,7 +1130,7 @@ function App() {
         </section>
 
         {/* Dashboard Grid */}
-        <div className="dashboard-grid">
+        <div className={`dashboard-grid${dashboardCollapsed ? ' dashboard-grid-collapsed' : ''}`}>
           {/* Income Card */}
           <div
             ref={incomeCardRef}

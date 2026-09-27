@@ -3051,8 +3051,18 @@ button {
 }
 
 #root .savings-card {
-  grid-column: 1 / 8;
+  grid-column: 8 / 13;
   grid-row: 3;
+}
+
+#root .dashboard-grid-collapsed .category-card {
+  grid-column: 8 / 13;
+  grid-row: 1;
+}
+
+#root .dashboard-grid-collapsed .savings-card {
+  grid-column: 8 / 13;
+  grid-row: 2;
 }
 
 #root .expense-table th {
@@ -3080,7 +3090,9 @@ button {
 }
 
 @media (max-width: 1180px) {
-  #root .savings-card {
+  #root .savings-card,
+  #root .dashboard-grid-collapsed .category-card,
+  #root .dashboard-grid-collapsed .savings-card {
     grid-column: span 6;
     grid-row: auto;
   }
