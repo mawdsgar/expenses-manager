@@ -440,30 +440,21 @@
 }
 
 .queue-task {
-  min-height: 55px;
+  min-height: 58px;
   display: grid;
-  grid-template-columns: auto 20px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 5px;
-  padding: 6px 5px;
+  gap: 10px;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--border);
-  background: #fff;
+  background: var(--surface-soft);
 }
 
 .queue-task:last-child { border-bottom: 0; }
-.queue-task.drop-target { box-shadow: inset 0 2px 0 var(--green); }
-.queue-task > svg { color: var(--text-muted); cursor: grab; }
-.queue-task.complete {
-  grid-template-columns: auto minmax(0, 1fr);
-  border-color: #cce8da;
-  background: var(--green-soft);
-}
-.queue-task.complete > svg { color: var(--green-dark); cursor: default; }
-.queue-number { color: var(--text-secondary); font-size: 11px; text-align: center; }
 
 .queue-task-main {
   min-width: 0;
-  padding: 2px;
+  padding: 3px 0;
   border: 0;
   background: transparent;
   text-align: left;
@@ -478,102 +469,35 @@
   white-space: nowrap;
 }
 
-.queue-task-main strong { color: var(--text); font-size: 11px; }
-.queue-task-main span { margin-top: 2px; color: var(--text-secondary); font-size: 10px; }
-.queue-task-main .queue-task-costs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 7px;
-  margin-top: 3px;
-  overflow: visible;
-  color: var(--text-secondary);
-  line-height: 1.25;
-  text-overflow: clip;
-  white-space: normal;
-}
-.queue-task-main .queue-task-costs span { display: inline; margin-top: 0; }
+.queue-task-main strong { color: var(--text); font-size: 12px; }
+.queue-task-main span { margin-top: 3px; color: var(--text-secondary); font-size: 10px; }
 
-.queue-controls {
-  display: grid;
-  grid-template-columns: repeat(3, 24px);
-  gap: 1px;
+.queue-task-remaining {
+  color: var(--green-dark);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-.queue-controls button {
-  width: 24px;
-  height: 24px;
+.queue-edit-button {
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   padding: 0;
-  border: 0;
-  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
   color: var(--text-muted);
-  background: transparent;
+  background: var(--surface);
   cursor: pointer;
 }
 
-.queue-controls button:hover:not(:disabled) { color: var(--green-dark); background: var(--green-soft); }
-.queue-controls button:disabled { opacity: 0.25; cursor: default; }
-.queue-controls button.pinned { color: var(--blue-dark); background: var(--blue-soft); }
+.queue-edit-button:hover { color: var(--green-dark); border-color: var(--green); background: var(--green-soft); }
 
 .queue-empty {
   padding: 18px 12px;
   color: var(--text-secondary);
   font-size: 11px;
   text-align: center;
-}
-
-.completed-work-section {
-  margin-top: 9px;
-  overflow: hidden;
-  border: 1px solid #9dd4bb;
-  border-radius: 8px;
-  background: var(--green-soft);
-}
-
-.completed-work-section summary {
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 10px;
-  color: var(--green-dark);
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 800;
-  list-style-position: inside;
-}
-
-.completed-work-section summary span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.completed-work-list {
-  max-height: 260px;
-  overflow-y: auto;
-  border-top: 1px solid #b8ddca;
-}
-
-.completed-work-list .queue-task { border-bottom-color: #cce8da; }
-
-.rebuild-button {
-  width: 100%;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 11px;
-  border: 1px solid var(--green-dark);
-  border-radius: 7px;
-  color: #fff;
-  background: var(--green-dark);
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
 }
 
 .sync-state {
@@ -835,8 +759,6 @@
   .renovation-metrics { grid-template-columns: 1fr; }
   .renovation-metrics article { min-height: 76px; }
   .renovation-progress { gap: 10px; padding: 13px; }
-  .queue-controls { grid-template-columns: repeat(3, 27px); }
-  .queue-controls button { width: 27px; height: 27px; }
   .renovation-modal-backdrop { padding: 8px; }
   .renovation-modal { max-height: calc(100vh - 16px); }
   .renovation-modal > header,
@@ -846,4 +768,201 @@
   .renovation-modal > footer { display: grid; }
   .renovation-modal > footer > div { width: 100%; }
   .renovation-modal > footer > div button { flex: 1; }
+}
+
+/* Renovation planner dark-surface alignment */
+#root .renovation-planner {
+  color: var(--text);
+}
+
+#root .renovation-primary {
+  border-color: var(--green);
+  color: #071b17;
+  background: var(--green);
+  box-shadow: 0 8px 20px rgba(32, 185, 135, 0.2);
+}
+
+#root .renovation-primary:hover {
+  background: #36d09d;
+}
+
+#root .renovation-metrics article,
+#root .renovation-progress,
+#root .timeline-panel,
+#root .work-queue {
+  border-color: var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+#root .renovation-metric-icon.amber {
+  color: #ffd98a;
+  background: var(--amber-soft);
+}
+
+#root .progress-track {
+  background: #2b3e51;
+}
+
+#root .timeline-actions button {
+  border-color: var(--border-strong);
+  color: var(--ink-soft);
+  background: var(--surface-soft);
+}
+
+#root .timeline-actions button:hover {
+  border-color: var(--green);
+  color: var(--green-dark);
+  background: #24384d;
+}
+
+#root .timeline-scroll {
+  scrollbar-color: #587089 #162638;
+}
+
+#root .timeline-month {
+  border-color: var(--border);
+  background: #142231;
+}
+
+#root .timeline-month:nth-child(even) {
+  background: #182a3b;
+}
+
+#root .month-task {
+  border-color: #3b5268;
+  color: var(--ink-soft);
+  background: #1b2b3c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+#root .month-task:hover {
+  border-color: #6b849b;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+}
+
+#root .month-task.complete {
+  border-color: #3caa84;
+  background: #17443b;
+}
+
+#root .month-task.complete:hover {
+  border-color: #63ddb3;
+}
+
+#root .empty-month {
+  border-color: #40566c;
+  color: var(--text-muted);
+}
+
+#root .timeline-month > footer {
+  border-color: var(--border);
+}
+
+#root .queue-add-button {
+  border-color: #2f8f71;
+  color: #74e0ba;
+  background: #173f3b;
+}
+
+#root .queue-add-button:hover {
+  color: #071b17;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+#root .queue-list {
+  border-color: var(--border);
+}
+
+#root .queue-task {
+  border-color: var(--border);
+  background: #1b2b3c;
+}
+
+#root .sync-state.error {
+  color: #ffd98a;
+}
+
+#root .renovation-notice {
+  border-color: #70582b;
+  color: #ffd98a;
+  background: #2a261d;
+}
+
+#root .renovation-notice.success {
+  border-color: #2f8068;
+  color: #74e0ba;
+  background: #173f3b;
+}
+
+#root .renovation-notice.info {
+  border-color: var(--border);
+  color: var(--ink-soft);
+  background: var(--surface);
+}
+
+/* Keep the renovation editor light, like the other data-entry dialogs. */
+#root .renovation-modal {
+  border-color: #dfe4ea;
+  background: #ffffff;
+  color: #102035;
+  box-shadow: 0 30px 80px rgba(16, 29, 45, 0.22);
+}
+
+#root .renovation-modal h2,
+#root .renovation-modal .task-payment-summary h3,
+#root .renovation-modal .task-payment-summary strong {
+  color: #102035;
+}
+
+#root .renovation-modal header p,
+#root .renovation-modal .task-payment-summary small {
+  color: #60738a;
+}
+
+#root .renovation-form-grid label {
+  color: #344054;
+}
+
+#root .renovation-form-grid input,
+#root .renovation-form-grid select,
+#root .renovation-form-grid textarea {
+  border-color: #cbd6e1;
+  color: #102035;
+  background: #ffffff;
+}
+
+#root .task-payment-summary {
+  border-color: #c9d7e4;
+  background: #f8fafc;
+}
+
+#root .modal-forecast {
+  border-color: #a4d6c0;
+  color: #07633e;
+  background: #f4fbf7;
+}
+
+#root .modal-forecast.unsafe {
+  border-color: #efb3a8;
+  color: #8a321f;
+  background: #fff7f5;
+}
+
+#root .renovation-modal > footer {
+  border-color: #e3e9ef;
+}
+
+#root .modal-cancel,
+#root .delete-task {
+  border-color: #ccd3dc;
+  color: #253a52;
+  background: #ffffff;
+}
+
+#root .modal-cancel:hover,
+#root .delete-task:hover {
+  border-color: #aeb8c5;
+  background: #f4f7f9;
 }

@@ -1,7 +1,5 @@
 import {
   AlertTriangle,
-  ArrowDown,
-  ArrowUp,
   CalendarRange,
   Check,
   CircleCheck,
@@ -12,8 +10,8 @@ import {
   HardHat,
   PiggyBank,
   Pin,
+  Pencil,
   Plus,
-  RefreshCw,
   Trash2,
   X,
 } from 'lucide-react';
@@ -24,7 +22,6 @@ import {
   findFundingGaps,
   formatMonth,
   lowestForecast,
-  rebuildTimelineFromOrder,
   taskPaid,
   taskRemaining,
   taskTotal,
@@ -84,7 +81,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     syncState,
     syncMessage,
     saveTask,
-    saveTasks,
     deleteTask,
     saveSettings,
   } = useRenovationData();
@@ -94,7 +90,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   );
   const [noticeTone, setNoticeTone] = useState<'info' | 'warning' | 'success'>('info');
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
-  const [queueDropId, setQueueDropId] = useState<string | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskDraft, setTaskDraft] = useState<RenovationTask>(emptyTask(settings.planStart));
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -118,17 +113,12 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   const completedWork = tasks
     .filter((task) => task.status === 'complete')
     .reduce((sum, task) => sum + taskTotal(task), 0);
-  const priorityOrderedTasks = useMemo(
-    () => [...tasks].sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id)),
-    [tasks],
-  );
   const timelineOrderedTasks = useMemo(
     () => [...tasks].sort(compareTasksByTimeline),
     [tasks],
   );
   const activeTasks = timelineOrderedTasks.filter((task) => task.status !== 'complete');
-  const completedTasks = timelineOrderedTasks.filter((task) => task.status === 'complete');
-  const completedCount = completedTasks.length;
+  const completedCount = tasks.filter((task) => task.status === 'complete').length;
 
   const attemptMove = (taskId: string, month: string) => {
     const task = tasks.find((item) => item.id === taskId);
@@ -145,49 +135,12 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     setDraggedTaskId(null);
   };
 
-  const reorderTask = (fromId: string, toId: string) => {
-    if (fromId === toId) return;
-    const next = [...activeTasks];
-    const fromIndex = next.findIndex((task) => task.id === fromId);
-    const toIndex = next.findIndex((task) => task.id === toId);
-    if (fromIndex < 0 || toIndex < 0) return;
-    if (next[fromIndex].pinned) {
-      setNotice(`${next[fromIndex].title} is pinned. Unpin it before changing its place in the queue.`);
-      setNoticeTone('warning');
-      return;
-    }
-    const [moved] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, moved);
-    const prioritisedTasks = [...next, ...completedTasks].map((task, sortOrder) => ({
-      ...task,
-      sortOrder,
-    }));
-    saveTasks(
-      rebuildTimelineFromOrder(
-        prioritisedTasks,
-        settings,
-      ),
-    );
-    setNotice('Work order updated and the remaining timeline rebuilt to match.');
-    setNoticeTone('success');
-  };
-
-  const nudgeTask = (id: string, direction: -1 | 1) => {
-    const index = activeTasks.findIndex((task) => task.id === id);
-    const target = index + direction;
-    if (index < 0 || target < 0 || target >= activeTasks.length) return;
-    reorderTask(id, activeTasks[target].id);
-  };
-
   const rebuildTimeline = () => {
-    const result = rebuildTimelineFromOrder(
-      priorityOrderedTasks,
-      settings,
-    );
-    saveTasks(result);
+    return;
     setNotice('Remaining timeline rebuilt from your work order. Completed work and pinned bookings stayed exactly where you left them.');
     setNoticeTone('success');
   };
+  void rebuildTimeline;
 
   const openAddTask = () => {
     setTaskDraft(emptyTask(settings.planStart));
@@ -249,6 +202,7 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     const preview = buildForecast(currentSavings, candidate, settings);
     return lowestForecast(preview, currentSavings);
   }, [currentSavings, settings, showTaskModal, taskDraft, tasks]);
+  const displayedForecast = modalForecast;
 
   return (
     <div className="renovation-planner">
@@ -390,92 +344,31 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
         <aside className="work-queue">
           <div className="queue-heading">
             <div>
-              <h2>Work queue</h2>
-              <span><strong>{activeTasks.length}</strong> {activeTasks.length === 1 ? 'job' : 'jobs'} · need doing</span>
+              <h2>Upcoming work</h2>
+              <span><strong>{activeTasks.length}</strong> {activeTasks.length === 1 ? 'job' : 'jobs'} · still to do</span>
             </div>
             <button className="queue-add-button" onClick={openAddTask}>
               <Plus size={14} /> Add work
             </button>
           </div>
-          <p>Matches the Timeline. Drag to reprioritise and rebuild the remaining plan.</p>
+          <p>Scheduled jobs and what remains to pay.</p>
           <div className="queue-list">
-            {activeTasks.map((task, index) => (
-              <div
-                key={task.id}
-                className={`queue-task ${queueDropId === task.id ? 'drop-target' : ''}`}
-                draggable
-                onDragStart={() => setDraggedTaskId(task.id)}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  setQueueDropId(task.id);
-                }}
-                onDragLeave={() => setQueueDropId(null)}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  if (draggedTaskId) reorderTask(draggedTaskId, task.id);
-                  setDraggedTaskId(null);
-                  setQueueDropId(null);
-                }}
-              >
-                <GripVertical size={15} />
-                <span className="queue-number">{index + 1}</span>
-                  <button className="queue-task-main" onClick={() => openEditTask(task)}>
-                    <strong>{task.title}</strong>
-                  <span className="queue-task-costs">
-                    <span>Estimate {money(taskTotal(task))}</span>
-                    <span>Paid {money(taskPaid(task))}</span>
-                    <span>Remaining {money(taskRemaining(task))}</span>
-                    <span>· {formatMonth(task.scheduledMonth, true)}{task.pinned ? ' · Booked / fixed' : ''}</span>
-                  </span>
+            {activeTasks.map((task) => (
+              <div key={task.id} className="queue-task">
+                <button className="queue-task-main" onClick={() => openEditTask(task)}>
+                  <strong>{task.title}</strong>
+                  <span>{formatMonth(task.scheduledMonth, true)}{task.pinned ? ' · Booked' : ''}</span>
                 </button>
-                <div className="queue-controls">
-                  <button onClick={() => nudgeTask(task.id, -1)} disabled={task.pinned || index === 0} aria-label={`Move ${task.title} up`}>
-                    <ArrowUp size={13} />
-                  </button>
-                  <button onClick={() => nudgeTask(task.id, 1)} disabled={task.pinned || index === activeTasks.length - 1} aria-label={`Move ${task.title} down`}>
-                    <ArrowDown size={13} />
-                  </button>
-                  <button
-                    className={task.pinned ? 'pinned' : ''}
-                    onClick={() => saveTask({ ...task, pinned: !task.pinned })}
-                    aria-label={`${task.pinned ? 'Unpin' : 'Pin'} ${task.title}`}
-                  >
-                    <Pin size={14} />
-                  </button>
-                </div>
+                <strong className="queue-task-remaining">{money(taskRemaining(task))} remaining</strong>
+                <button className="queue-edit-button" onClick={() => openEditTask(task)} aria-label={`Edit ${task.title}`}>
+                  <Pencil size={14} />
+                </button>
               </div>
             ))}
             {activeTasks.length === 0 && (
-              <div className="queue-empty">No work left to plan.</div>
+              <div className="queue-empty">No upcoming work.</div>
             )}
           </div>
-          {completedTasks.length > 0 && (
-            <details className="completed-work-section">
-              <summary>
-                <span><CircleCheck size={15} /> Completed ({completedTasks.length})</span>
-                <strong>{money(completedWork)}</strong>
-              </summary>
-              <div className="completed-work-list">
-                {completedTasks.map((task) => (
-                  <div key={task.id} className="queue-task complete">
-                    <CircleCheck size={15} />
-                    <button className="queue-task-main" onClick={() => openEditTask(task)}>
-                      <strong>{task.title}</strong>
-                      <span className="queue-task-costs">
-                        <span>Estimate {money(taskTotal(task))}</span>
-                        <span>Paid {money(taskPaid(task))}</span>
-                        <span>Remaining {money(taskRemaining(task))}</span>
-                        <span>· {formatMonth(task.scheduledMonth, true)}</span>
-                      </span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </details>
-          )}
-          <button className="rebuild-button" onClick={rebuildTimeline}>
-            <RefreshCw size={16} /> Rebuild remaining timeline from this order
-          </button>
           <div className={`sync-state ${syncState}`}>
             {syncState === 'synced' && <><Check size={13} /> Shared plan synced</>}
             {syncState === 'loading' && 'Loading shared plan…'}
@@ -583,7 +476,7 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                   onChange={(event) => setTaskDraft({ ...taskDraft, dependsOn: event.target.value || null })}
                 >
                   <option value="">None</option>
-                  {priorityOrderedTasks.filter((task) => task.id !== taskDraft.id).map((task) => (
+                  {timelineOrderedTasks.filter((task) => task.id !== taskDraft.id).map((task) => (
                     <option key={task.id} value={task.id}>{task.title}</option>
                   ))}
                 </select>
@@ -625,10 +518,10 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                 <span><small>Remaining</small><strong>{money(taskRemaining(taskDraft))}</strong></span>
               </div>
             </section>
-            {modalForecast !== null && (
-              <div className={`modal-forecast ${modalForecast < 0 ? 'unsafe' : ''}`}>
+            {displayedForecast !== null && (
+              <div className={`modal-forecast ${displayedForecast < 0 ? 'unsafe' : ''}`}>
                 <CalendarRange size={18} />
-                {`Lowest projected balance: ${money(modalForecast)}.`}
+                {`Lowest projected balance: ${money(displayedForecast)}.`}
               </div>
             )}
             <footer>
