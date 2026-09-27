@@ -3610,6 +3610,7 @@ button {
 
 #root .expense-section .table-controls,
 #root .expense-section .expense-table thead,
+#root .expense-section .expense-table thead th,
 #root .expense-section .expense-table tbody tr:nth-child(odd) {
   background: #ffffff;
 }
