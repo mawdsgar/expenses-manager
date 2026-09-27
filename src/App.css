@@ -3050,6 +3050,42 @@ button {
   background: #e4ebf0;
 }
 
+#root .savings-card {
+  grid-column: 1 / 8;
+  grid-row: 3;
+}
+
+#root .expense-table th {
+  font-size: 11px;
+}
+
+#root .expense-table td {
+  font-size: 13px;
+}
+
+#root .expense-table .payment-status-copy {
+  font-size: 12px;
+}
+
+#root .expense-table .payment-status-copy small {
+  font-size: 12px;
+}
+
+#root .expense-table .expense-amount-remaining {
+  font-size: 11px;
+}
+
+#root .expense-table td::before {
+  font-size: 10px;
+}
+
+@media (max-width: 1180px) {
+  #root .savings-card {
+    grid-column: span 6;
+    grid-row: auto;
+  }
+}
+
 @media (max-width: 760px) {
   #root .savings-modal form {
     grid-template-columns: 1fr;
