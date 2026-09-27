@@ -10,7 +10,6 @@ import {
   HardHat,
   PiggyBank,
   Pin,
-  Pencil,
   Plus,
   Trash2,
   X,
@@ -78,8 +77,6 @@ const statusLabels: Record<RenovationStatus, string> = {
 export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   const {
     data,
-    syncState,
-    syncMessage,
     saveTask,
     deleteTask,
     saveSettings,
@@ -117,7 +114,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     () => [...tasks].sort(compareTasksByTimeline),
     [tasks],
   );
-  const activeTasks = timelineOrderedTasks.filter((task) => task.status !== 'complete');
   const completedCount = tasks.filter((task) => task.status === 'complete').length;
 
   const attemptMove = (taskId: string, month: string) => {
@@ -142,8 +138,8 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
   };
   void rebuildTimeline;
 
-  const openAddTask = () => {
-    setTaskDraft(emptyTask(settings.planStart));
+  const openAddTask = (month = settings.planStart) => {
+    setTaskDraft(emptyTask(month));
     setShowTaskModal(true);
   };
 
@@ -212,9 +208,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           <h1>Renovation planner</h1>
           <p>Plan the work around the money you actually have—not the money the house wishes you had.</p>
         </div>
-        <button className="renovation-primary" onClick={openAddTask}>
-          <Plus size={17} /> Add work item
-        </button>
       </div>
 
       <section className="renovation-metrics" aria-label="Renovation summary">
@@ -329,10 +322,20 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                       )}
                     </div>
                     <footer>
-                      <span>Ending balance</span>
-                      <strong className={monthData.endingBalance < 0 ? 'negative-balance' : ''}>
-                        {money(monthData.endingBalance)}
-                      </strong>
+                      <div className="timeline-month-balance">
+                        <span>Ending balance</span>
+                        <strong className={monthData.endingBalance < 0 ? 'negative-balance' : ''}>
+                          {money(monthData.endingBalance)}
+                        </strong>
+                      </div>
+                      <button
+                        type="button"
+                        className="month-add-button"
+                        onClick={() => openAddTask(monthData.month)}
+                        aria-label={`Add work to ${formatMonth(monthData.month)}`}
+                      >
+                        <Plus size={13} /> Work
+                      </button>
                     </footer>
                   </article>
                 );
@@ -341,41 +344,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           </div>
         </section>
 
-        <aside className="work-queue">
-          <div className="queue-heading">
-            <div>
-              <h2>Upcoming work</h2>
-              <span><strong>{activeTasks.length}</strong> {activeTasks.length === 1 ? 'job' : 'jobs'} · still to do</span>
-            </div>
-            <button className="queue-add-button" onClick={openAddTask}>
-              <Plus size={14} /> Add work
-            </button>
-          </div>
-          <p>Scheduled jobs and what remains to pay.</p>
-          <div className="queue-list">
-            {activeTasks.map((task) => (
-              <div key={task.id} className="queue-task">
-                <button className="queue-task-main" onClick={() => openEditTask(task)}>
-                  <strong>{task.title}</strong>
-                  <span>{formatMonth(task.scheduledMonth, true)}{task.pinned ? ' · Booked' : ''}</span>
-                </button>
-                <strong className="queue-task-remaining">{money(taskRemaining(task))} remaining</strong>
-                <button className="queue-edit-button" onClick={() => openEditTask(task)} aria-label={`Edit ${task.title}`}>
-                  <Pencil size={14} />
-                </button>
-              </div>
-            ))}
-            {activeTasks.length === 0 && (
-              <div className="queue-empty">No upcoming work.</div>
-            )}
-          </div>
-          <div className={`sync-state ${syncState}`}>
-            {syncState === 'synced' && <><Check size={13} /> Shared plan synced</>}
-            {syncState === 'loading' && 'Loading shared plan…'}
-            {syncState === 'local' && 'Saved on this device'}
-            {syncState === 'error' && syncMessage}
-          </div>
-        </aside>
       </div>
 
       <div className={`renovation-notice ${noticeTone}`} role="status">
