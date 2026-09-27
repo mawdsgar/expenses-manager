@@ -3146,3 +3146,407 @@ button {
     margin-bottom: 0;
   }
 }
+
+/* Dark finance workspace theme */
+:root {
+  --ink: #f3f7fb;
+  --ink-soft: #d6e0ea;
+  --canvas: #0b141f;
+  --surface: #142231;
+  --surface-soft: #1a2b3c;
+  --text: #f3f7fb;
+  --text-secondary: #a7b8c9;
+  --text-muted: #7f93a8;
+  --border: #2b3e51;
+  --border-strong: #40566c;
+  --green: #20b987;
+  --green-dark: #63ddb3;
+  --green-soft: #173f3b;
+  --red: #f36b64;
+  --red-dark: #ff958c;
+  --red-soft: #472a31;
+  --blue: #82a9ff;
+  --blue-dark: #bad0ff;
+  --blue-soft: #203653;
+  --amber: #f6bc4a;
+  --amber-soft: #4b3921;
+  --purple: #a781ff;
+  --cyan: #48bfd0;
+  --shadow-sm: 0 8px 22px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 18px 42px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+#root,
+#root .app,
+#root .app-workspace,
+#root .app-header,
+#root .app-main,
+#root .renovation-main,
+#root .auth-container {
+  background: var(--canvas);
+  color: var(--text);
+}
+
+#root .brand-title,
+#root .card-title,
+#root .section-title,
+#root .modal-title,
+#root .confirm-title,
+#root .card-summary-value,
+#root .summary-amount,
+#root .income-name,
+#root .savings-account-name,
+#root .expense-table td,
+#root .form-label,
+#root .auth-card h1 {
+  color: var(--ink);
+}
+
+#root .header-period,
+#root .header-avatar,
+#root .dashboard-card,
+#root .expense-section,
+#root .auth-card,
+#root .modal,
+#root .confirm-modal,
+#root .category-donut-hole {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+#root .header-period {
+  color: var(--ink-soft);
+}
+
+#root .header-avatar {
+  box-shadow: var(--shadow-sm);
+}
+
+#root .summary-strip {
+  border-color: var(--border);
+}
+
+#root .summary-metric {
+  border-color: var(--border);
+}
+
+#root .summary-metric span,
+#root .summary-metric small,
+#root .income-details,
+#root .savings-account-type,
+#root .savings-account-interest,
+#root .date-range-label,
+#root .form-hint,
+#root .payment-remaining span,
+#root .payment-status-copy small,
+#root .empty-state,
+#root .category-donut-hole span {
+  color: var(--text-secondary);
+}
+
+#root .btn-icon,
+#root .btn-edit,
+#root .btn-delete,
+#root .btn-close,
+#root .btn-add-option,
+#root .btn-control,
+#root .btn-secondary,
+#root .btn-confirm-cancel,
+#root .btn-undo {
+  border-color: var(--border-strong);
+  color: var(--ink-soft);
+  background: var(--surface-soft);
+}
+
+#root .btn-icon:hover,
+#root .btn-edit:hover,
+#root .btn-close:hover,
+#root .btn-control:hover,
+#root .btn-secondary:hover,
+#root .btn-confirm-cancel:hover {
+  border-color: var(--blue);
+  color: var(--ink);
+  background: #24384d;
+}
+
+#root .btn-delete {
+  color: var(--red-dark);
+}
+
+#root .btn-delete:hover {
+  border-color: var(--red);
+  color: var(--red-dark);
+  background: var(--red-soft);
+}
+
+#root .card-header,
+#root .section-header,
+#root .expense-section-header,
+#root .expense-section-container,
+#root .income-item,
+#root .savings-account-item {
+  border-color: var(--border);
+}
+
+#root .card-header:hover,
+#root .expense-section-header:hover {
+  background: #1a2b3c;
+}
+
+#root .card-footer-summary,
+#root .table-controls,
+#root .category-legend-row,
+#root .expense-section-content,
+#root .payment-remaining {
+  border-color: var(--border);
+  background: var(--surface-soft);
+}
+
+#root .cashflow-box {
+  border-color: #70404a;
+  background: var(--red-soft);
+  color: var(--ink-soft);
+}
+
+#root .cashflow-box .summary-label,
+#root .cashflow-box .cashflow-emphasis {
+  color: var(--red-dark);
+}
+
+#root .expense-table th {
+  border-color: var(--border);
+  color: var(--text-secondary);
+  background: #1b2d3e;
+}
+
+#root .expense-table td {
+  border-bottom-color: #2a3b4e;
+  color: var(--ink-soft);
+}
+
+#root .expense-table tbody tr:nth-child(odd) {
+  background: #142231;
+}
+
+#root .expense-table tbody tr:nth-child(even) {
+  background: #1a2b3c;
+}
+
+#root .expense-table tbody tr:hover {
+  background: #263b50;
+}
+
+#root .sort-icon.muted {
+  color: #8095aa;
+}
+
+#root .account-badge {
+  color: var(--blue-dark);
+  background: var(--blue-soft);
+}
+
+#root .category-badge {
+  color: var(--text-secondary);
+  background: #293746;
+}
+
+#root .category-badge.category-housing,
+#root .category-badge.category-essential-household,
+#root .category-badge.category-bills {
+  color: var(--red-dark);
+  background: var(--red-soft);
+}
+
+#root .category-badge.category-savings {
+  color: var(--green-dark);
+  background: var(--green-soft);
+}
+
+#root .category-badge.category-motoring,
+#root .category-badge.category-kids {
+  color: #ffd98a;
+  background: var(--amber-soft);
+}
+
+#root .category-badge.category-entertainment,
+#root .category-badge.category-subscriptions {
+  color: #c8b5ff;
+  background: #34295a;
+}
+
+#root .expense-amount-remaining {
+  color: var(--green-dark);
+}
+
+#root .form-input,
+#root .form-select,
+#root .auth-card .form-group input,
+#root .currency-input input,
+#root .date-range input {
+  border-color: var(--border-strong);
+  color: var(--ink);
+  background: #0f1b28;
+}
+
+#root .form-input::placeholder {
+  color: #75899d;
+}
+
+#root .form-input:focus,
+#root .form-select:focus,
+#root .currency-input input:focus,
+#root .date-range input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(32, 185, 135, 0.2);
+}
+
+#root .checkbox-group,
+#root .savings-modal .checkbox-group {
+  color: var(--ink-soft);
+  border-color: var(--border);
+  background: var(--surface-soft);
+}
+
+#root .checkbox-group label,
+#root .breakdown-label,
+#root .account-name,
+#root .section-name,
+#root .section-total,
+#root .payment-status-copy,
+#root .category-legend-name {
+  color: var(--ink-soft);
+}
+
+#root .account-amount,
+#root .category-legend-row strong {
+  color: var(--ink);
+}
+
+#root .modal-overlay {
+  background: rgba(2, 8, 14, 0.78);
+}
+
+#root .modal-footer {
+  border-color: var(--border);
+  background: #111d2a;
+}
+
+#root .payment-remaining {
+  border-color: #2f6655;
+  background: var(--green-soft);
+}
+
+#root .payment-remaining strong,
+#root .category-donut-hole small {
+  color: var(--green-dark);
+}
+
+#root .confirm-warning {
+  color: #ffd98a;
+  background: var(--amber-soft);
+}
+
+#root .auth-card {
+  box-shadow: var(--shadow-md);
+}
+
+#root .auth-error,
+#root .error-message {
+  border-color: #70404a;
+  color: var(--red-dark);
+  background: var(--red-soft);
+}
+
+#root .sidebar-collapse-toggle {
+  border-color: var(--border-strong);
+  color: var(--ink-soft);
+  background: var(--surface);
+}
+
+#root .sidebar-collapse-toggle:hover {
+  color: var(--green-dark);
+  border-color: var(--green);
+}
+
+/* Keep data-entry dialogs light for continuity and readability. */
+#root .modal,
+#root .confirm-modal {
+  border-color: #dfe4ea;
+  background: #ffffff;
+  color: #102035;
+  box-shadow: 0 30px 80px rgba(16, 29, 45, 0.22);
+}
+
+#root .modal .modal-header,
+#root .modal .modal-footer {
+  border-color: #e3e9ef;
+  background: #ffffff;
+}
+
+#root .modal .modal-title,
+#root .modal .form-label,
+#root .modal .checkbox-group label,
+#root .confirm-modal .confirm-title {
+  color: #102035;
+}
+
+#root .modal .form-input,
+#root .modal .form-select,
+#root .modal .auth-card .form-group input,
+#root .modal .currency-input input,
+#root .modal .date-range input {
+  border-color: #cbd6e1;
+  color: #102035;
+  background: #ffffff;
+}
+
+#root .modal .form-input::placeholder {
+  color: #a2acb8;
+}
+
+#root .modal .btn-icon,
+#root .modal .btn-edit,
+#root .modal .btn-delete,
+#root .modal .btn-close,
+#root .modal .btn-add-option,
+#root .modal .btn-control,
+#root .modal .btn-secondary,
+#root .modal .btn-confirm-cancel,
+#root .confirm-modal .btn-confirm-cancel {
+  border-color: #ccd3dc;
+  color: #253a52;
+  background: #ffffff;
+}
+
+#root .modal .btn-icon:hover,
+#root .modal .btn-close:hover,
+#root .modal .btn-control:hover,
+#root .modal .btn-secondary:hover,
+#root .confirm-modal .btn-confirm-cancel:hover {
+  border-color: #aeb8c5;
+  color: #102035;
+  background: #f4f7f9;
+}
+
+#root .modal .payment-remaining {
+  border-color: #cfe9dd;
+  background: #e7f7f1;
+}
+
+#root .modal .payment-remaining span,
+#root .modal .form-hint,
+#root .confirm-modal .confirm-message {
+  color: #60738a;
+}
+
+#root .modal .payment-remaining strong {
+  color: #087f5c;
+}
+
+#root .confirm-modal .confirm-warning {
+  color: #8a570c;
+  background: #fff7e3;
+}
