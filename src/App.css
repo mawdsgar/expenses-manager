@@ -3550,3 +3550,75 @@ button {
   color: #8a570c;
   background: #fff7e3;
 }
+
+/* Mobile: use the full-width bottom navigation and keep expense cards compact. */
+@media (max-width: 760px) {
+  #root .app-sidebar,
+  #root .sidebar-is-collapsed .app-sidebar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 80;
+    width: 100%;
+    height: calc(74px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: row;
+    padding: 8px 12px env(safe-area-inset-bottom);
+    border-top: 1px solid #2b3e51;
+    background: #101d2d;
+  }
+
+  #root .sidebar-brand,
+  #root .sidebar-footer,
+  #root .sidebar-collapse-toggle {
+    display: none;
+  }
+
+  #root .sidebar-nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  #root .sidebar-link,
+  #root .sidebar-is-collapsed .sidebar-link {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 5px 3px;
+    border-radius: 9px;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  #root .sidebar-link span,
+  #root .sidebar-is-collapsed .sidebar-link span {
+    display: block;
+  }
+
+  #root .sidebar-link.active {
+    box-shadow: inset 0 -2px 0 #63ddb3;
+  }
+
+  #root .app-workspace,
+  #root .sidebar-is-collapsed .app-workspace {
+    margin-left: 0;
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  }
+
+  #root .expense-table tbody tr {
+    padding: 10px;
+  }
+
+  #root .expense-table td {
+    padding: 6px 6px 6px 0;
+  }
+
+  #root .expense-table td[data-label='Frequency'],
+  #root .expense-table td[data-label='Account'],
+  #root .expense-table td[data-label='Category'] {
+    display: none;
+  }
+}
