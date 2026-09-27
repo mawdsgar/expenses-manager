@@ -7,7 +7,6 @@ import { AddIncomeModal } from './components/AddIncomeModal';
 import { AddSavingsModal } from './components/AddSavingsModal';
 import { RenovationPlanner } from './features/renovation/RenovationPlanner';
 import {
-  BadgePoundSterling,
   AlertTriangle,
   CalendarDays,
   ChevronDown,
@@ -891,8 +890,15 @@ function App() {
   const sortedCategories = Object.entries(expensesByCategory)
     .sort(([, a], [, b]) => b - a);
 
-  // Find max value for chart scaling
-  const maxCategorySpending = Math.max(...Object.values(expensesByCategory), 1);
+  const categoryColors = ['#149b73', '#ef5b55', '#2f80ed', '#f5b52a', '#8055d6', '#159ab1'];
+  let categoryGradientOffset = 0;
+  const categoryDonutGradient = sortedCategories.length > 0
+    ? sortedCategories.map(([, amount], index) => {
+      const start = categoryGradientOffset;
+      categoryGradientOffset += (amount / totalExpenses) * 100;
+      return `${categoryColors[index % categoryColors.length]} ${start}% ${categoryGradientOffset}%`;
+    }).join(', ')
+    : '#edf1f4 0% 100%';
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
@@ -990,8 +996,11 @@ function App() {
     <div className={`app ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}>
       <aside className="app-sidebar">
         <div className="sidebar-brand">
-          <span className="brand-mark"><BadgePoundSterling size={22} /></span>
-          <span className="brand-name">Expense Manager</span>
+          <span className="brand-mark"><Home size={22} /></span>
+          <span className="brand-copy">
+            <span className="brand-name">The Mawdsley's</span>
+            <span className="brand-tagline">Home · Plans · Progress</span>
+          </span>
         </div>
         <button
           className="sidebar-collapse-toggle"
@@ -1014,19 +1023,19 @@ function App() {
             <LayoutDashboard size={19} />
             <span>Overview</span>
           </button>
-          <button className="sidebar-link" aria-label="Expenses" onClick={() => {
-            setActiveWorkspace('overview');
-            window.setTimeout(() => document.querySelector('.expense-section')?.scrollIntoView({ behavior: 'smooth' }), 0);
-          }}>
-            <ReceiptText size={19} />
-            <span>Expenses</span>
-          </button>
           <button className="sidebar-link" aria-label="Income" onClick={() => {
             setActiveWorkspace('overview');
             window.setTimeout(() => incomeCardRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
           }}>
             <TrendingUp size={19} />
             <span>Income</span>
+          </button>
+          <button className="sidebar-link" aria-label="Expenditure" onClick={() => {
+            setActiveWorkspace('overview');
+            window.setTimeout(() => document.querySelector('.expense-section')?.scrollIntoView({ behavior: 'smooth' }), 0);
+          }}>
+            <ReceiptText size={19} />
+            <span>Expenditure</span>
           </button>
           <button className="sidebar-link" aria-label="Savings" onClick={() => {
             setActiveWorkspace('overview');
@@ -1060,7 +1069,7 @@ function App() {
         {activeWorkspace === 'overview' && <header className="app-header">
           <div className="header-content">
             <div>
-              <h1 className="brand-title">Household overview</h1>
+              <h1 className="brand-title">The Mawdsley's Income &amp; Expenditure</h1>
               <p className="header-period">
                 <CalendarDays size={15} />
                 {new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(new Date())}
@@ -1081,7 +1090,7 @@ function App() {
           <div className="summary-metric metric-income">
             <div className="metric-icon"><TrendingUp size={19} /></div>
             <div>
-              <span>Monthly income</span>
+              <span>Monthly Income</span>
               <strong>{formatCurrency(totalIncome)}</strong>
               <small>{incomes.length} income source{incomes.length === 1 ? '' : 's'}</small>
             </div>
@@ -1089,7 +1098,7 @@ function App() {
           <div className="summary-metric metric-committed">
             <div className="metric-icon"><TrendingDown size={19} /></div>
             <div>
-              <span>Committed</span>
+              <span>Monthly Expenditure</span>
               <strong>{formatCurrency(totalExpenditure)}</strong>
               <small>{totalIncome > 0 ? `${Math.round((totalExpenditure / totalIncome) * 100)}% of income` : 'No income set'}</small>
             </div>
@@ -1149,6 +1158,7 @@ function App() {
                     aria-label="Add income"
                   >
                     <Plus size={18} />
+                    <span className="btn-add-label">Add income</span>
                   </button>
                 )}
                 <button
@@ -1464,47 +1474,33 @@ function App() {
                     No expenses yet
                   </div>
                 ) : (
-                  sortedCategories.map(([category, amount]) => {
-                    const percentage = ((amount / totalExpenses) * 100).toFixed(1);
-                    const barWidth = (amount / maxCategorySpending) * 100;
-                    const categoryClass = category
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, '-')
-                      .replace(/^-+|-+$/g, '');
-                    const labelOnFill = barWidth >= 12;
-                    const percentOnFill = barWidth >= 92;
-
-                    return (
-                      <div key={category} className="category-bar-item">
-                        <div className="category-bar-row">
-                          <div className="category-bar-container">
-                            <div
-                              className={`category-bar category-${categoryClass}`}
-                              style={{ width: `${barWidth}%` }}
-                            />
-
-                            <div className="category-bar-overlay">
-                              <span
-                                className={`category-bar-overlay-label ${labelOnFill ? 'on-fill' : 'off-fill'}`}
-                                title={category}
-                              >
-                                {category}
-                              </span>
-                              <span
-                                className={`category-bar-overlay-percent ${percentOnFill ? 'on-fill' : 'off-fill'}`}
-                              >
-                                {percentage}%
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="category-bar-values">
-                            <span className="category-bar-amount">{formatCurrency(amount)}</span>
-                          </div>
+                  <>
+                    <div className="category-chart-summary">
+                      <div
+                        className="category-donut"
+                        style={{ background: `conic-gradient(${categoryDonutGradient})` }}
+                        aria-label={`Total spending ${formatCurrency(totalExpenses)}`}
+                      >
+                        <div className="category-donut-hole">
+                          <strong>{formatCurrency(totalExpenses)}</strong>
+                          <span>Total spent</span>
                         </div>
                       </div>
-                    );
-                  })
+                    </div>
+                    <div className="category-legend">
+                      {sortedCategories.map(([category, amount], index) => {
+                        const percentage = ((amount / totalExpenses) * 100).toFixed(1);
+                        return (
+                          <div key={category} className="category-legend-row">
+                            <span className="category-swatch" style={{ background: categoryColors[index % categoryColors.length] }} />
+                            <span className="category-legend-name">{category}</span>
+                            <strong>{formatCurrency(amount)}</strong>
+                            <span>{percentage}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -1545,6 +1541,7 @@ function App() {
                     aria-label="Add savings account"
                   >
                     <Plus size={18} />
+                    <span className="btn-add-label">Add savings</span>
                   </button>
                 )}
                 <button
@@ -1656,6 +1653,7 @@ function App() {
                   aria-label="Add expense"
                 >
                   <Plus size={18} />
+                  <span className="btn-add-label">Add expenditure</span>
                 </button>
               )}
               <button
