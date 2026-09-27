@@ -2702,12 +2702,12 @@ button {
 
 #root .category-card {
   grid-column: 8 / 13;
-  grid-row: 1 / 3;
+  grid-row: 1;
 }
 
 #root .savings-card {
   grid-column: 8 / 13;
-  grid-row: 3;
+  grid-row: 2;
 }
 
 #root .card-header {
@@ -3052,7 +3052,7 @@ button {
 
 #root .savings-card {
   grid-column: 8 / 13;
-  grid-row: 3;
+  grid-row: 2;
 }
 
 #root .dashboard-grid-collapsed .category-card {
@@ -3090,6 +3090,7 @@ button {
 }
 
 @media (max-width: 1180px) {
+  #root .category-card,
   #root .savings-card,
   #root .dashboard-grid-collapsed .category-card,
   #root .dashboard-grid-collapsed .savings-card {
@@ -3105,5 +3106,43 @@ button {
 
   #root .savings-modal .savings-variable-rate {
     grid-column: auto;
+  }
+}
+
+#root .dashboard-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#root .dashboard-column-left {
+  grid-column: 1 / 8;
+}
+
+#root .dashboard-column-right {
+  grid-column: 8 / 13;
+}
+
+#root .dashboard-column .dashboard-card {
+  grid-column: auto;
+  grid-row: auto;
+}
+
+@media (max-width: 1180px) {
+  #root .dashboard-column-left,
+  #root .dashboard-column-right {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 760px) {
+  #root .dashboard-column-left,
+  #root .dashboard-column-right {
+    margin-bottom: 16px;
+  }
+
+  #root .dashboard-column-right {
+    margin-bottom: 0;
   }
 }

@@ -1131,11 +1131,12 @@ function App() {
 
         {/* Dashboard Grid */}
         <div className={`dashboard-grid${dashboardCollapsed ? ' dashboard-grid-collapsed' : ''}`}>
-          {/* Income Card */}
-          <div
+          <div className="dashboard-column dashboard-column-left">
+            {/* Income Card */}
+            <div
             ref={incomeCardRef}
             className={`dashboard-card income-card${dashboardCollapsed ? ' collapsed' : ''}`}
-          >
+            >
             <div
               className="card-header clickable"
               role="button"
@@ -1232,13 +1233,13 @@ function App() {
                 </div>
               </>
             )}
-          </div>
+            </div>
 
-          {/* Expenses Card */}
-          <div
+            {/* Expenses Card */}
+            <div
             ref={expensesCardRef}
             className={`dashboard-card expenses-card${dashboardCollapsed ? ' collapsed' : ''}`}
-          >
+            >
             <div
               className="card-header clickable"
               role="button"
@@ -1433,13 +1434,15 @@ function App() {
                 </div>
               </>
             )}
+            </div>
           </div>
 
-          {/* Spending by Category */}
-          <div
+          <div className="dashboard-column dashboard-column-right">
+            {/* Spending by Category */}
+            <div
             ref={categoryCardRef}
             className={`dashboard-card category-card${dashboardCollapsed ? ' collapsed' : ''}`}
-          >
+            >
             <div
               className="card-header clickable"
               role="button"
@@ -1539,13 +1542,13 @@ function App() {
                 )}
               </div>
             )}
-          </div>
+            </div>
 
-          {/* Savings Card */}
-          <div
+            {/* Savings Card */}
+            <div
             ref={savingsCardRef}
             className={`dashboard-card savings-card${dashboardCollapsed ? ' collapsed' : ''}`}
-          >
+            >
             <div
               className="card-header clickable"
               role="button"
@@ -1654,6 +1657,7 @@ function App() {
                 </div>
               </>
             )}
+            </div>
           </div>
         </div>
 
