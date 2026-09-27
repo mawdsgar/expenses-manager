@@ -3582,7 +3582,9 @@ button {
 #root .dashboard-card .card-title,
 #root .dashboard-card .card-summary-value,
 #root .dashboard-card .income-name,
+#root .dashboard-card .income-amount,
 #root .dashboard-card .savings-account-name,
+#root .dashboard-card .savings-account-balance,
 #root .dashboard-card .section-name,
 #root .dashboard-card .section-total,
 #root .dashboard-card .account-name,
@@ -3604,8 +3606,17 @@ button {
 #root .dashboard-card .expand-icon,
 #root .expense-section .date-range-label,
 #root .expense-section .payment-status-copy,
+#root .expense-section .payment-status-copy small,
 #root .expense-section .expense-table th {
   color: #60738a;
+}
+
+#root .expense-section .expense-table td {
+  color: #102035 !important;
+}
+
+#root .expense-section .expense-table .expense-amount-remaining {
+  color: #087f5c;
 }
 
 #root .expense-section .table-controls,
