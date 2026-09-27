@@ -2972,3 +2972,90 @@ button {
     padding-inline: 16px;
   }
 }
+
+#root .category-donut {
+  position: relative;
+  display: block;
+  background: transparent;
+  transform: none;
+}
+
+#root .category-donut-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+#root .category-donut-segment {
+  cursor: pointer;
+  outline: none;
+  transition: stroke-width 160ms ease, filter 160ms ease;
+}
+
+#root .category-donut-segment:hover,
+#root .category-donut-segment:focus-visible {
+  filter: brightness(0.92) saturate(1.1);
+  stroke-width: 40;
+}
+
+#root .category-donut-hole {
+  position: absolute;
+  inset: 19.5%;
+  width: auto;
+  height: auto;
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform: none;
+}
+
+#root .category-donut-hole small {
+  margin-top: 3px;
+  color: var(--green-dark);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+#root .savings-modal {
+  width: min(600px, 100%);
+}
+
+#root .savings-modal form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#root .savings-modal .savings-variable-rate {
+  grid-column: 1 / -1;
+}
+
+#root .savings-modal .checkbox-group {
+  min-height: 45px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+#root .expense-table tbody tr:nth-child(odd) {
+  background: #fbfcfd;
+}
+
+#root .expense-table tbody tr:nth-child(even) {
+  background: #eef1f4;
+}
+
+#root .expense-table tbody tr:hover {
+  background: #e4ebf0;
+}
+
+@media (max-width: 760px) {
+  #root .savings-modal form {
+    grid-template-columns: 1fr;
+  }
+
+  #root .savings-modal .savings-variable-rate {
+    grid-column: auto;
+  }
+}

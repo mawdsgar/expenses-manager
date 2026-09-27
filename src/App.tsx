@@ -69,6 +69,7 @@ function App() {
   const [editingSavings, setEditingSavings] = useState<SavingsAccount | undefined>(undefined);
   const [editingIncome, setEditingIncome] = useState<Income | undefined>(undefined);
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   // Table sorting state
   const [sortField, setSortField] = useState<keyof Expense | 'amount' | 'dueDate'>('dueDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -891,14 +892,21 @@ function App() {
     .sort(([, a], [, b]) => b - a);
 
   const categoryColors = ['#149b73', '#ef5b55', '#2f80ed', '#f5b52a', '#8055d6', '#159ab1'];
-  let categoryGradientOffset = 0;
-  const categoryDonutGradient = sortedCategories.length > 0
-    ? sortedCategories.map(([, amount], index) => {
-      const start = categoryGradientOffset;
-      categoryGradientOffset += (amount / totalExpenses) * 100;
-      return `${categoryColors[index % categoryColors.length]} ${start}% ${categoryGradientOffset}%`;
-    }).join(', ')
-    : '#edf1f4 0% 100%';
+  let categorySegmentOffset = 0;
+  const categorySegments = sortedCategories.map(([category, amount], index) => {
+    const percentage = (amount / totalExpenses) * 100;
+    const segment = {
+      category,
+      amount,
+      percentage,
+      color: categoryColors[index % categoryColors.length],
+      offset: categorySegmentOffset,
+      length: Math.max(percentage - 1.2, 0.6),
+    };
+    categorySegmentOffset += percentage;
+    return segment;
+  });
+  const hoveredCategoryDetails = categorySegments.find((segment) => segment.category === hoveredCategory);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
@@ -1478,27 +1486,54 @@ function App() {
                     <div className="category-chart-summary">
                       <div
                         className="category-donut"
-                        style={{ background: `conic-gradient(${categoryDonutGradient})` }}
+                        onMouseLeave={() => setHoveredCategory(null)}
                         aria-label={`Total spending ${formatCurrency(totalExpenses)}`}
                       >
+                        <svg
+                          className="category-donut-svg"
+                          viewBox="0 0 240 240"
+                          role="img"
+                          aria-label="Spending by category. Focus a segment for details."
+                        >
+                  {categorySegments.map((segment) => (
+                    <circle
+                      key={segment.category}
+                      className="category-donut-segment"
+                      cx="120"
+                      cy="120"
+                      r="86"
+                      fill="none"
+                      stroke={segment.color}
+                      strokeWidth="34"
+                      strokeDasharray={`${segment.length} ${100 - segment.length}`}
+                      strokeDashoffset={-segment.offset}
+                      pathLength="100"
+                      tabIndex={0}
+                      role="img"
+                      aria-label={`${segment.category}: ${formatCurrency(segment.amount)}, ${segment.percentage.toFixed(1)}%`}
+                      onMouseEnter={() => setHoveredCategory(segment.category)}
+                      onFocus={() => setHoveredCategory(segment.category)}
+                      onBlur={() => setHoveredCategory(null)}
+                    >
+                      <title>{`${segment.category}: ${formatCurrency(segment.amount)} (${segment.percentage.toFixed(1)}%)`}</title>
+                    </circle>
+                  ))}
+                        </svg>
                         <div className="category-donut-hole">
-                          <strong>{formatCurrency(totalExpenses)}</strong>
-                          <span>Total spent</span>
+                          {hoveredCategoryDetails ? (
+                            <>
+                              <strong>{formatCurrency(hoveredCategoryDetails.amount)}</strong>
+                              <span>{hoveredCategoryDetails.category}</span>
+                              <small>{hoveredCategoryDetails.percentage.toFixed(1)}% of total</small>
+                            </>
+                          ) : (
+                            <>
+                              <strong>{formatCurrency(totalExpenses)}</strong>
+                              <span>Total spent</span>
+                            </>
+                          )}
                         </div>
                       </div>
-                    </div>
-                    <div className="category-legend">
-                      {sortedCategories.map(([category, amount], index) => {
-                        const percentage = ((amount / totalExpenses) * 100).toFixed(1);
-                        return (
-                          <div key={category} className="category-legend-row">
-                            <span className="category-swatch" style={{ background: categoryColors[index % categoryColors.length] }} />
-                            <span className="category-legend-name">{category}</span>
-                            <strong>{formatCurrency(amount)}</strong>
-                            <span>{percentage}%</span>
-                          </div>
-                        );
-                      })}
                     </div>
                   </>
                 )}

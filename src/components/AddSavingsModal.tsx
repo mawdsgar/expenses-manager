@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import type { SavingsAccount } from '../types/expense';
 
 interface AddSavingsModalProps {
@@ -69,7 +69,7 @@ export const AddSavingsModal: React.FC<AddSavingsModalProps> = ({ isOpen, onClos
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal savings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">{editingSavings ? 'Edit Savings Account' : 'Add Savings Account'}</h2>
           <button className="btn-close" onClick={onClose} aria-label="Close"><X size={19} /></button>
@@ -119,7 +119,7 @@ export const AddSavingsModal: React.FC<AddSavingsModalProps> = ({ isOpen, onClos
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
-              <button type="button" className="btn-add-option">+</button>
+              <button type="button" className="btn-add-option" aria-label="Add account type"><Plus size={16} /></button>
             </div>
           </div>
 
@@ -141,7 +141,7 @@ export const AddSavingsModal: React.FC<AddSavingsModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="form-group savings-variable-rate">
             <div className="checkbox-group">
               <input
                 type="checkbox"
