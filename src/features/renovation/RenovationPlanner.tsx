@@ -1,7 +1,5 @@
 import {
-  AlertTriangle,
   CalendarRange,
-  Check,
   CircleCheck,
   ChevronLeft,
   ChevronRight,
@@ -82,10 +80,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     saveSettings,
   } = useRenovationData();
   const { tasks, settings } = data;
-  const [notice, setNotice] = useState(
-    'Drag a job onto a month. I’ll be the boring one who checks the maths.',
-  );
-  const [noticeTone, setNoticeTone] = useState<'info' | 'warning' | 'success'>('info');
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskDraft, setTaskDraft] = useState<RenovationTask>(emptyTask(settings.planStart));
@@ -121,8 +115,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     if (!task) return;
 
     saveTask({ ...task, scheduledMonth: month });
-    setNotice(`${task.title} moved to ${formatMonth(month)}. The spreadsheet may now retire.`);
-    setNoticeTone('success');
   };
 
   const handleMonthDrop = (event: DragEvent, month: string) => {
@@ -131,12 +123,12 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     setDraggedTaskId(null);
   };
 
-  const rebuildTimeline = () => {
+  /* const rebuildTimeline = () => {
     return;
     setNotice('Remaining timeline rebuilt from your work order. Completed work and pinned bookings stayed exactly where you left them.');
     setNoticeTone('success');
   };
-  void rebuildTimeline;
+  */
 
   const openAddTask = (month = settings.planStart) => {
     setTaskDraft(emptyTask(month));
@@ -170,8 +162,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     };
     saveTask(savedTask);
     setShowTaskModal(false);
-    setNotice(`${savedTask.title} added to the plan. Another small victory over renovation chaos.`);
-    setNoticeTone('success');
   };
 
   const removeTask = () => {
@@ -179,15 +169,11 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
     if (!window.confirm(`Remove ${taskDraft.title} from the renovation plan?`)) return;
     deleteTask(taskDraft.id);
     setShowTaskModal(false);
-    setNotice(`${taskDraft.title} removed. Hopefully because it is no longer needed, not merely hiding.`);
-    setNoticeTone('info');
   };
 
   const extendPlan = () => {
     const nextEnd = addMonths(settings.planEnd, 6);
     saveSettings({ ...settings, planEnd: nextEnd });
-    setNotice(`Plan extended to ${formatMonth(nextEnd)}. Optimism, but with room for snagging.`);
-    setNoticeTone('success');
   };
 
   const modalForecast = useMemo(() => {
@@ -344,11 +330,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
           </div>
         </section>
 
-      </div>
-
-      <div className={`renovation-notice ${noticeTone}`} role="status">
-        {noticeTone === 'warning' ? <AlertTriangle size={20} /> : noticeTone === 'success' ? <Check size={20} /> : <HardHat size={20} />}
-        <span>{notice}</span>
       </div>
 
       {showTaskModal && (

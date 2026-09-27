@@ -3551,6 +3551,106 @@ button {
   background: #fff7e3;
 }
 
+/* Keep the overview and monthly expense surfaces light against the dark app shell. */
+#root .dashboard-card,
+#root .expense-section {
+  border-color: #dfe4ea;
+  background: #ffffff;
+  color: #102035;
+}
+
+#root .dashboard-card .card-header,
+#root .dashboard-card .income-item,
+#root .dashboard-card .savings-account-item,
+#root .dashboard-card .card-footer-summary,
+#root .dashboard-card .category-chart,
+#root .dashboard-card .expense-section-container,
+#root .dashboard-card .expense-section-header,
+#root .dashboard-card .expense-section-content,
+#root .expense-section .section-header,
+#root .expense-section .table-controls {
+  border-color: #dfe4ea;
+  background: #ffffff;
+}
+
+#root .dashboard-card .card-header:hover,
+#root .expense-section .section-header:hover,
+#root .dashboard-card .expense-section-header:hover {
+  background: #f7f9fb;
+}
+
+#root .dashboard-card .card-title,
+#root .dashboard-card .card-summary-value,
+#root .dashboard-card .income-name,
+#root .dashboard-card .savings-account-name,
+#root .dashboard-card .section-name,
+#root .dashboard-card .section-total,
+#root .dashboard-card .account-name,
+#root .dashboard-card .account-amount,
+#root .dashboard-card .summary-label,
+#root .dashboard-card .summary-amount,
+#root .expense-section .section-title,
+#root .expense-section .section-name,
+#root .expense-section .section-total,
+#root .expense-section .expense-table th,
+#root .expense-section .expense-table td {
+  color: #102035;
+}
+
+#root .dashboard-card .income-details,
+#root .dashboard-card .savings-account-type,
+#root .dashboard-card .savings-account-interest,
+#root .dashboard-card .card-icon,
+#root .dashboard-card .expand-icon,
+#root .expense-section .date-range-label,
+#root .expense-section .payment-status-copy,
+#root .expense-section .expense-table th {
+  color: #60738a;
+}
+
+#root .expense-section .table-controls,
+#root .expense-section .expense-table thead,
+#root .expense-section .expense-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+#root .expense-section .expense-table tbody tr:nth-child(even) {
+  background: #f1f4f7;
+}
+
+#root .expense-section .expense-table tbody tr:hover {
+  background: #e7edf2;
+}
+
+#root .expense-section .expense-table th,
+#root .expense-section .expense-table td,
+#root .expense-section .table-controls,
+#root .expense-section .section-header {
+  border-color: #dfe4ea;
+}
+
+#root .expense-section .btn-control,
+#root .expense-section .btn-icon,
+#root .dashboard-card .btn-icon {
+  border-color: #cbd6e1;
+  color: #253a52;
+  background: #ffffff;
+}
+
+#root .expense-section .btn-control:hover,
+#root .expense-section .btn-icon:hover,
+#root .dashboard-card .btn-icon:hover {
+  border-color: #aeb8c5;
+  color: #102035;
+  background: #f4f7f9;
+}
+
+#root .expense-section .date-range input {
+  border-color: #cbd6e1;
+  color: #102035;
+  background: #ffffff;
+}
+
 /* Mobile: use the full-width bottom navigation and keep expense cards compact. */
 @media (max-width: 760px) {
   #root .app-sidebar,

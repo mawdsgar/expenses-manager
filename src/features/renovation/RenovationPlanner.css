@@ -59,14 +59,14 @@
   max-width: 1640px;
   margin: 0 auto 18px;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
 .renovation-metrics article {
   min-height: 102px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 15px;
   position: relative;
   padding: 18px;
@@ -97,10 +97,6 @@
   margin-top: 3px;
   color: var(--text-secondary);
   font-size: 12px;
-}
-
-.shortfall-metric {
-  align-items: flex-start;
 }
 
 .shortfall-metric-content {
@@ -399,24 +395,6 @@
   background: var(--green);
 }
 
-.renovation-notice {
-  max-width: 1640px;
-  min-height: 58px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 18px auto 0;
-  padding: 13px 17px;
-  border: 1px solid #f2ca86;
-  border-radius: 8px;
-  color: #704500;
-  background: #fff9ee;
-}
-
-.renovation-notice.success { color: #07633e; border-color: #9dd4bb; background: #f3fbf7; }
-.renovation-notice.info { color: #344054; border-color: var(--border); background: var(--surface); }
-.renovation-notice span { font-size: 12px; font-weight: 600; }
-
 .renovation-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -603,7 +581,7 @@
 
 .delete-task { color: var(--red-dark); }
 
-@media (max-width: 1280px) {
+@media (max-width: 1100px) {
   .renovation-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -733,24 +711,6 @@
 
 #root .timeline-month > footer {
   border-color: var(--border);
-}
-
-#root .renovation-notice {
-  border-color: #70582b;
-  color: #ffd98a;
-  background: #2a261d;
-}
-
-#root .renovation-notice.success {
-  border-color: #2f8068;
-  color: #74e0ba;
-  background: #173f3b;
-}
-
-#root .renovation-notice.info {
-  border-color: var(--border);
-  color: var(--ink-soft);
-  background: var(--surface);
 }
 
 /* Keep the renovation editor light, like the other data-entry dialogs. */
