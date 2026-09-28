@@ -3666,13 +3666,14 @@ button {
 /* Dark cards with a richer gradient frame around the workspace. */
 #root .app-workspace {
   background:
-    radial-gradient(circle at 88% 8%, rgba(38, 133, 153, 0.22), transparent 34rem),
-    radial-gradient(circle at 8% 88%, rgba(91, 66, 153, 0.2), transparent 38rem),
-    linear-gradient(135deg, #071522 0%, #0b2532 48%, #15152d 100%);
+    radial-gradient(circle at 88% 8%, rgba(52, 157, 177, 0.26), transparent 34rem),
+    radial-gradient(circle at 8% 88%, rgba(118, 88, 180, 0.22), transparent 38rem),
+    linear-gradient(135deg, #0d1c2a 0%, #123442 48%, #242340 100%);
 }
 
 #root .app-header,
-#root .app-main {
+#root .app-main,
+#root .renovation-main {
   background: transparent;
 }
 
