@@ -3663,6 +3663,128 @@ button {
   background: #ffffff;
 }
 
+/* Dark cards with a richer gradient frame around the workspace. */
+#root .app-workspace {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(38, 133, 153, 0.22), transparent 34rem),
+    radial-gradient(circle at 8% 88%, rgba(91, 66, 153, 0.2), transparent 38rem),
+    linear-gradient(135deg, #071522 0%, #0b2532 48%, #15152d 100%);
+}
+
+#root .app-header,
+#root .app-main {
+  background: transparent;
+}
+
+#root .dashboard-card,
+#root .expense-section {
+  border-color: #294158;
+  background: #142231;
+  color: var(--text);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+#root .dashboard-card .card-header,
+#root .dashboard-card .income-item,
+#root .dashboard-card .savings-account-item,
+#root .dashboard-card .card-footer-summary,
+#root .dashboard-card .category-chart,
+#root .dashboard-card .expense-section-container,
+#root .dashboard-card .expense-section-header,
+#root .dashboard-card .expense-section-content,
+#root .expense-section .section-header,
+#root .expense-section .table-controls {
+  border-color: #2b4359;
+  background: transparent;
+}
+
+#root .dashboard-card .card-header:hover,
+#root .expense-section .section-header:hover,
+#root .dashboard-card .expense-section-header:hover {
+  background: #1a2b3c;
+}
+
+#root .dashboard-card .card-title,
+#root .dashboard-card .card-summary-value,
+#root .dashboard-card .income-name,
+#root .dashboard-card .income-amount,
+#root .dashboard-card .savings-account-name,
+#root .dashboard-card .savings-account-balance,
+#root .dashboard-card .section-name,
+#root .dashboard-card .section-total,
+#root .dashboard-card .account-name,
+#root .dashboard-card .account-amount,
+#root .dashboard-card .summary-label,
+#root .dashboard-card .summary-amount,
+#root .expense-section .section-title,
+#root .expense-section .section-name,
+#root .expense-section .section-total {
+  color: var(--ink);
+}
+
+#root .dashboard-card .income-details,
+#root .dashboard-card .savings-account-type,
+#root .dashboard-card .savings-account-interest,
+#root .dashboard-card .card-icon,
+#root .dashboard-card .expand-icon,
+#root .expense-section .date-range-label,
+#root .expense-section .payment-status-copy,
+#root .expense-section .payment-status-copy small {
+  color: var(--text-secondary);
+}
+
+#root .expense-section .table-controls,
+#root .expense-section .expense-table thead,
+#root .expense-section .expense-table thead th,
+#root .expense-section .expense-table tbody tr:nth-child(odd) {
+  background: #142231;
+}
+
+#root .expense-section .expense-table tbody tr:nth-child(even) {
+  background: #1a2b3c;
+}
+
+#root .expense-section .expense-table tbody tr:hover {
+  background: #263b50;
+}
+
+#root .expense-section .expense-table th {
+  border-color: #2b4359;
+  color: var(--text-secondary);
+  background: #1b2d3e;
+}
+
+#root .expense-section .expense-table td {
+  border-bottom-color: #2a3b4e;
+  color: var(--ink-soft) !important;
+}
+
+#root .expense-section .expense-table .expense-amount-remaining {
+  color: var(--green-dark);
+}
+
+#root .expense-section .btn-control,
+#root .expense-section .btn-icon,
+#root .dashboard-card .btn-icon {
+  border-color: var(--border-strong);
+  color: var(--ink-soft);
+  background: #1b2d3e;
+}
+
+#root .expense-section .btn-control:hover,
+#root .expense-section .btn-icon:hover,
+#root .dashboard-card .btn-icon:hover {
+  border-color: var(--blue);
+  color: var(--ink);
+  background: #24384d;
+}
+
+#root .expense-section .date-range input {
+  border-color: var(--border-strong);
+  color: var(--ink);
+  background: #0f1b28;
+}
+
 /* Mobile: use the full-width bottom navigation and keep expense cards compact. */
 @media (max-width: 760px) {
   #root .app-sidebar,
