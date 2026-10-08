@@ -281,7 +281,7 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                       {monthData.tasks.map((task) => (
                         <button
                           key={task.id}
-                          className={`month-task ${task.status === 'complete' ? 'complete' : ''}`}
+                          className={`month-task ${task.status === 'complete' ? 'complete' : taskPaid(task) === 0 ? 'unpaid' : taskRemaining(task) > 0 ? 'part-paid' : ''}`}
                           draggable={task.status !== 'complete'}
                           onDragStart={() => setDraggedTaskId(task.id)}
                           onDragEnd={() => setDraggedTaskId(null)}

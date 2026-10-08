@@ -340,6 +340,24 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
+#root .month-task.part-paid {
+  border-color: #d99b24;
+  background: #fef3c7;
+  color: #78350f;
+}
+#root .month-task.unpaid {
+  border-color: #e7a3a3;
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+#root .month-task.part-paid .task-card-costs,
+#root .month-task.part-paid .task-card-costs small,
+#root .month-task.part-paid > svg:first-child { color: #92400e; }
+#root .month-task.unpaid .task-card-costs,
+#root .month-task.unpaid .task-card-costs small,
+#root .month-task.unpaid > svg:first-child { color: #991b1b; }
+#root .month-task.part-paid:hover { border-color: #b77912; }
+#root .month-task.unpaid:hover { border-color: #cf7575; }
 .month-task.complete {
   border-color: #9dd4bb;
   background: var(--green-soft);
