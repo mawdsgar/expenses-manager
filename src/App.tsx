@@ -34,6 +34,7 @@ import {
 import './App.css';
 
 function App() {
+  const [activeNavigation, setActiveNavigation] = useState('Overview');
   const [activeWorkspace, setActiveWorkspace] = useState<'overview' | 'renovation'>('overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
     localStorage.getItem('sidebarCollapsed') === 'true',
@@ -1036,9 +1037,11 @@ function App() {
         </button>
         <nav className="sidebar-nav" aria-label="Primary navigation">
           <button
-            className={`sidebar-link ${activeWorkspace === 'overview' ? 'active' : ''}`}
+            className={`sidebar-link ${activeNavigation === 'Overview' ? 'active' : ''}`}
+            aria-current={activeNavigation === 'Overview' ? 'page' : undefined}
             aria-label="Overview"
             onClick={() => {
+              setActiveNavigation('Overview');
               setActiveWorkspace('overview');
               requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
             }}
@@ -1046,21 +1049,24 @@ function App() {
             <LayoutDashboard size={19} />
             <span>Overview</span>
           </button>
-          <button className="sidebar-link" aria-label="Income" onClick={() => {
+          <button className={`sidebar-link ${activeNavigation === 'Income' ? 'active' : ''}`} aria-current={activeNavigation === 'Income' ? 'page' : undefined} aria-label="Income" onClick={() => {
+            setActiveNavigation('Income');
             setActiveWorkspace('overview');
             window.setTimeout(() => incomeCardRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
           }}>
             <TrendingUp size={19} />
             <span>Income</span>
           </button>
-          <button className="sidebar-link" aria-label="Expenditure" onClick={() => {
+          <button className={`sidebar-link ${activeNavigation === 'Expenditure' ? 'active' : ''}`} aria-current={activeNavigation === 'Expenditure' ? 'page' : undefined} aria-label="Expenditure" onClick={() => {
+            setActiveNavigation('Expenditure');
             setActiveWorkspace('overview');
             window.setTimeout(() => document.querySelector('.expense-section')?.scrollIntoView({ behavior: 'smooth' }), 0);
           }}>
             <ReceiptText size={19} />
             <span>Expenditure</span>
           </button>
-          <button className="sidebar-link" aria-label="Savings" onClick={() => {
+          <button className={`sidebar-link ${activeNavigation === 'Savings' ? 'active' : ''}`} aria-current={activeNavigation === 'Savings' ? 'page' : undefined} aria-label="Savings" onClick={() => {
+            setActiveNavigation('Savings');
             setActiveWorkspace('overview');
             window.setTimeout(() => savingsCardRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
           }}>
@@ -1068,9 +1074,11 @@ function App() {
             <span>Savings</span>
           </button>
           <button
-            className={`sidebar-link ${activeWorkspace === 'renovation' ? 'active' : ''}`}
+            className={`sidebar-link ${activeNavigation === 'Renovation' ? 'active' : ''}`}
+            aria-current={activeNavigation === 'Renovation' ? 'page' : undefined}
             aria-label="Renovation"
             onClick={() => {
+              setActiveNavigation('Renovation');
               setActiveWorkspace('renovation');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
