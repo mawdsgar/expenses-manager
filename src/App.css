@@ -3884,3 +3884,11 @@ button {
   --text-secondary: #d5deea;
   --green-dark: #6ee7b7;
 }
+
+#root .expense-section .expense-table .btn-edit {
+  color: #d5deea;
+}
+
+#root .expense-section .expense-table .btn-edit:hover {
+  color: #ffffff;
+}
