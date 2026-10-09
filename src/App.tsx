@@ -74,6 +74,16 @@ function App() {
   const [sortField, setSortField] = useState<keyof Expense | 'amount' | 'dueDate'>('dueDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   // Date range filter state
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const expenseListRef = useRef<HTMLDivElement>(null);
+  const showCategoryExpenses = (category: string) => {
+    setCategoryFilter(category);
+    setPaymentFilters(['Paid', 'Unpaid', 'Partially Paid']);
+    setFromDate('');
+    setToDate('');
+    setExpensesCollapsed(false);
+    requestAnimationFrame(() => expenseListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
   const [paymentFilters, setPaymentFilters] = useState<string[]>(['Paid', 'Unpaid', 'Partially Paid']);
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
@@ -957,6 +967,7 @@ function App() {
 
   // Apply date range filtering (inclusive) before sorting
   const filteredExpenses = expenses.filter((e) => {
+    if (categoryFilter && e.category !== categoryFilter) return false;
     const paymentStatus = e.paid ? 'Paid' : getExpensePaidAmount(e) > 0 ? 'Partially Paid' : 'Unpaid';
     if (!paymentFilters.includes(paymentStatus)) return false;
     if (fromDate) {
@@ -1505,7 +1516,14 @@ function App() {
                       strokeDashoffset={-segment.offset}
                       pathLength="100"
                       tabIndex={0}
-                      role="img"
+                      role="button"
+                      onClick={() => showCategoryExpenses(segment.category)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          showCategoryExpenses(segment.category);
+                        }
+                      }}
                       aria-label={`${segment.category}: ${formatCurrency(segment.amount)}, ${segment.percentage.toFixed(1)}%`}
                       onMouseEnter={() => setHoveredCategory(segment.category)}
                       onFocus={() => setHoveredCategory(segment.category)}
@@ -1655,7 +1673,7 @@ function App() {
         </div>
 
         {/* All Expenses Table */}
-        <div className={`expense-section${expensesCollapsed ? ' collapsed' : ''}`}>
+        <div ref={expenseListRef} className={`expense-section${expensesCollapsed ? ' collapsed' : ''}`}>
           <div
             className="section-header clickable"
             role="button"
@@ -1705,6 +1723,12 @@ function App() {
 
           {!expensesCollapsed && (
             <div id="all-expenses-content">
+              {categoryFilter && (
+                <div className="category-filter-summary" role="status">
+                  <span>Category: <b>{categoryFilter}</b></span>
+                  <button className="btn-control" onClick={() => setCategoryFilter(null)}>Show all categories</button>
+                </div>
+              )}
               <div className="table-controls">
                 <button className="btn-control" onClick={exportToExcel}><Download size={15} /> Export</button>
                 <button className="btn-control" onClick={newCycle}><RotateCcw size={15} /> New cycle</button>
