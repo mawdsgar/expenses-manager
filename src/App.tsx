@@ -1896,7 +1896,7 @@ function App() {
                 </table>
               )}
               <div className="displayed-expenses-total" aria-live="polite">
-                Total: {formatCurrency(filteredExpenses.reduce((total, expense) => total + expense.amount, 0))}
+                {paymentFilters.includes('Paid') ? 'Total' : 'Left to pay'}: {formatCurrency(filteredExpenses.reduce((total, expense) => total + (paymentFilters.includes('Paid') ? expense.amount : getExpenseRemainingAmount(expense)), 0))}
               </div>
             </div>
           )}
