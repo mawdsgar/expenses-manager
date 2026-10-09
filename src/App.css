@@ -3990,3 +3990,11 @@ button {
 #root .expense-section .expense-table th:nth-child(7) {
   color: #ffffff;
 }
+
+#root .expense-section .expense-table .account-badge.natwest {
+  background: #5b287a;
+}
+
+#root .expense-section .expense-table .account-badge.monzo {
+  background: #b93830;
+}
