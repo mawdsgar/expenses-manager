@@ -1125,10 +1125,10 @@ function App() {
           <div className="summary-metric metric-cashflow">
             <div className="metric-icon"><CalendarDays size={19} /></div>
             <div>
-              <span>Cashflow</span>
+              <span>Left to go out</span>
               <strong>{formatCurrency(leftToGoOut)}</strong>
               <small>{daysUntilPayday !== null
-                ? <>Left to go out · <b className="payday-countdown">Payday in {daysUntilPayday} day{daysUntilPayday !== 1 ? 's' : ''}</b></>
+                ? <b className="payday-countdown">Payday in {daysUntilPayday} day{daysUntilPayday !== 1 ? 's' : ''}</b>
                 : 'Payday not set'}</small>
             </div>
           </div>
