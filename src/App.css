@@ -3934,3 +3934,18 @@ button {
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
+
+@media (min-width: 1101px) {
+  #root .summary-strip {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+#root .metric-cashflow .metric-icon,
+#root .metric-cashflow strong {
+  color: #ff7c75;
+}
+
+#root .metric-cashflow small {
+  white-space: normal;
+}

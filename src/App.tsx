@@ -1122,6 +1122,16 @@ function App() {
               <small>After regular outgoings</small>
             </div>
           </div>
+          <div className="summary-metric metric-cashflow">
+            <div className="metric-icon"><CalendarDays size={19} /></div>
+            <div>
+              <span>Cashflow</span>
+              <strong>{formatCurrency(leftToGoOut)}</strong>
+              <small>{daysUntilPayday !== null
+                ? `Left to go out · Payday in ${daysUntilPayday} day${daysUntilPayday !== 1 ? 's' : ''}`
+                : 'Payday not set'}</small>
+            </div>
+          </div>
           <div className="summary-metric metric-savings">
             <div className="metric-icon"><PiggyBank size={19} /></div>
             <div>
@@ -1280,27 +1290,6 @@ function App() {
 
             {!dashboardCollapsed && (
               <>
-                {/* Combined payday + left-to-go-out panel */}
-                <div className="card-inline-summary cashflow-box">
-                  <div className="summary-icon"><CalendarDays size={20} /></div>
-                  <div className="summary-footer-text">
-                    <div className="summary-label">Cashflow</div>
-                    <div className="summary-subtext">
-                      {daysUntilPayday !== null ? (
-                        <>
-                          You get paid in{' '}
-                          <span className="cashflow-emphasis">{daysUntilPayday}</span>{' '}
-                          <span className="cashflow-emphasis">day{daysUntilPayday !== 1 ? 's' : ''}</span> and have{' '}
-                          <span className="cashflow-emphasis">{formatCurrency(Math.abs(leftToGoOut))}</span>{' '}
-                          left to go out{leftToGoOut < 0 ? ' (over)' : ''}.
-                        </>
-                      ) : (
-                        'Payday not set'
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Allowances Section */}
                 <div className="expense-section-container">
                   <div
