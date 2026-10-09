@@ -3964,3 +3964,13 @@ button {
   background: #472a31;
   white-space: nowrap;
 }
+
+#root .expense-section .expense-table .expense-amount-remaining {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: #166534;
+  color: #ffffff;
+  font-weight: 700;
+}
