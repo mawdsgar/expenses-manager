@@ -3949,3 +3949,8 @@ button {
 #root .metric-cashflow small {
   white-space: normal;
 }
+
+#root .metric-cashflow .payday-countdown {
+  color: #ffffff;
+  font-weight: 700;
+}

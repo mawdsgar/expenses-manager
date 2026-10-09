@@ -1128,7 +1128,7 @@ function App() {
               <span>Cashflow</span>
               <strong>{formatCurrency(leftToGoOut)}</strong>
               <small>{daysUntilPayday !== null
-                ? `Left to go out · Payday in ${daysUntilPayday} day${daysUntilPayday !== 1 ? 's' : ''}`
+                ? <>Left to go out · <b className="payday-countdown">Payday in {daysUntilPayday} day{daysUntilPayday !== 1 ? 's' : ''}</b></>
                 : 'Payday not set'}</small>
             </div>
           </div>
