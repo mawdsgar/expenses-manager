@@ -3857,3 +3857,24 @@ button {
     display: none;
   }
 }
+
+/* Payment status colours take priority over alternating row backgrounds. */
+#root .expense-section .expense-table tbody tr.expense-row-paid {
+  background: #dcfce7;
+}
+
+#root .expense-section .expense-table tbody tr.expense-row-part-paid {
+  background: #fef3c7;
+}
+
+#root .expense-section .expense-table tbody tr.expense-row-unpaid {
+  background: #fee2e2;
+}
+
+#root .expense-section .expense-table tbody tr:is(.expense-row-paid, .expense-row-part-paid, .expense-row-unpaid) {
+  --text: #1e293b;
+  --ink-soft: #334155;
+  --text-secondary: #475569;
+  --green-dark: #166534;
+  color: var(--text);
+}

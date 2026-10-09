@@ -1794,7 +1794,10 @@ function App() {
                   </thead>
                   <tbody>
                     {sortedExpenses.map((expense) => (
-                      <tr key={expense.id}>
+                      <tr
+                        key={expense.id}
+                        className={expense.paid ? 'expense-row-paid' : getExpensePaidAmount(expense) > 0 ? 'expense-row-part-paid' : 'expense-row-unpaid'}
+                      >
                         <td data-label="Paid">
                           <div className="payment-status-cell">
                             <input
@@ -1804,12 +1807,7 @@ function App() {
                               onChange={() => togglePaid(expense.id)}
                               aria-label={`Mark ${expense.payee} as ${expense.paid ? 'unpaid' : 'paid'}`}
                             />
-                            <span className="payment-status-copy">
-                              <span>{expense.paid ? 'Paid in full' : getExpensePaidAmount(expense) > 0 ? `${formatCurrency(getExpensePaidAmount(expense))} paid` : 'Unpaid'}</span>
-                              {!expense.paid && getExpensePaidAmount(expense) > 0 && (
-                                <small>{formatCurrency(getExpenseRemainingAmount(expense))} remaining</small>
-                              )}
-                            </span>
+
                           </div>
                         </td>
                         <td data-label="Payee">{expense.payee}</td>
