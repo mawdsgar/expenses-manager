@@ -74,6 +74,7 @@ function App() {
   const [sortField, setSortField] = useState<keyof Expense | 'amount' | 'dueDate'>('dueDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   // Date range filter state
+  const [paymentFilters, setPaymentFilters] = useState<string[]>(['Paid', 'Unpaid', 'Partially Paid']);
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [undoExpenses, setUndoExpenses] = useState<Expense[] | null>(null);
@@ -955,6 +956,8 @@ function App() {
 
   // Apply date range filtering (inclusive) before sorting
   const filteredExpenses = expenses.filter((e) => {
+    const paymentStatus = e.paid ? 'Paid' : getExpensePaidAmount(e) > 0 ? 'Partially Paid' : 'Unpaid';
+    if (!paymentFilters.includes(paymentStatus)) return false;
     if (fromDate) {
       const eDate = new Date(e.dueDate);
       const fDate = new Date(fromDate);
@@ -1717,6 +1720,23 @@ function App() {
                 <button className="btn-control" onClick={newCycle}><RotateCcw size={15} /> New cycle</button>
                 <button className="btn-control" onClick={markAllUnpaid}>Mark all unpaid</button>
                 <button className="btn-control" onClick={markAllPaid}>Mark all paid</button>
+                <fieldset className="payment-filters">
+                  <legend>Payment status</legend>
+                  {['Paid', 'Unpaid', 'Partially Paid'].map((status) => (
+                    <label key={status}>
+                      <input
+                        type="checkbox"
+                        checked={paymentFilters.includes(status)}
+                        onChange={() => setPaymentFilters((selected) =>
+                          selected.includes(status)
+                            ? selected.filter((item) => item !== status)
+                            : [...selected, status],
+                        )}
+                      />
+                      {status}
+                    </label>
+                  ))}
+                </fieldset>
                 <div className="date-range">
                   <span className="date-range-label"><CalendarDays size={15} /> Date range</span>
                   <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
@@ -1735,6 +1755,10 @@ function App() {
               {expenses.length === 0 ? (
                 <div className="empty-state">
                   <p>No expenses yet. Add your first expense above!</p>
+                </div>
+              ) : sortedExpenses.length === 0 ? (
+                <div className="empty-state" role="status">
+                  <p>No expenses match the selected filters.</p>
                 </div>
               ) : (
                 <table className="expense-table">

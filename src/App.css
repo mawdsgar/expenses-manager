@@ -3892,3 +3892,36 @@ button {
 #root .expense-section .expense-table .btn-edit:hover {
   color: #ffffff;
 }
+
+#root .payment-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 0;
+  padding: 8px 12px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: #d5deea;
+  font-size: 12px;
+}
+
+#root .payment-filters legend {
+  padding: 0 4px;
+  color: #a9bacb;
+  font-size: 11px;
+}
+
+#root .payment-filters label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#root .payment-filters input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #149b73;
+}
