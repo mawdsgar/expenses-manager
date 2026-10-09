@@ -1895,6 +1895,9 @@ function App() {
                   </tbody>
                 </table>
               )}
+              <div className="displayed-expenses-total" aria-live="polite">
+                Total: {formatCurrency(filteredExpenses.reduce((total, expense) => total + expense.amount, 0))}
+              </div>
             </div>
           )}
         </div>
