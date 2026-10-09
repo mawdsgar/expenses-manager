@@ -3954,3 +3954,13 @@ button {
   color: #ffffff;
   font-weight: 700;
 }
+
+#root .metric-cashflow .payday-countdown {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 6px 9px;
+  border: 1px solid #ff7c75;
+  border-radius: 6px;
+  background: #472a31;
+  white-space: nowrap;
+}
