@@ -3983,3 +3983,10 @@ button {
   color: #ffffff;
   font-weight: 800;
 }
+
+#root .expense-section .expense-table .account-badge,
+#root .expense-section .expense-table .category-badge,
+#root .expense-section .expense-table th:nth-child(6),
+#root .expense-section .expense-table th:nth-child(7) {
+  color: #ffffff;
+}
