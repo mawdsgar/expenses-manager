@@ -907,6 +907,7 @@ function App() {
     categorySegmentOffset += percentage;
     return segment;
   });
+  const categoryBadgeColors = new Map(categorySegments.map(({ category, color }) => [category, color]));
   const hoveredCategoryDetails = categorySegments.find((segment) => segment.category === hoveredCategory);
 
   const formatCurrency = (amount: number) => {
@@ -1865,6 +1866,7 @@ function App() {
                         </td>
                         <td data-label="Category">
                           <span
+                            style={{ backgroundColor: categoryBadgeColors.get(expense.category) }}
                             className={`category-badge category-${expense.category
                               .toLowerCase()
                               .replace(/[^a-z0-9]+/g, '-')
