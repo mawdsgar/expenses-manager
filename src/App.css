@@ -3878,3 +3878,9 @@ button {
   --green-dark: #166534;
   color: var(--text);
 }
+
+/* Badges keep light text on their dark backgrounds inside payment-coloured rows. */
+#root .expense-section .expense-table .category-badge {
+  --text-secondary: #d5deea;
+  --green-dark: #6ee7b7;
+}
