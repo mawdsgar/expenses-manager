@@ -1277,7 +1277,15 @@ function App() {
                   {incomes.map((income) => (
                     <div key={income.id} className="income-item">
                       <div className="income-header">
-                        <div className="income-name">{income.from}</div>
+                        <div className="income-heading">
+                          <div className="income-name">{income.from}</div>
+                          {(income.isPrimary || income.isSalary) && (
+                            <div className="income-badges">
+                              {income.isPrimary && <span className="primary-badge"><Star size={11} /> Primary</span>}
+                              {income.isSalary && <span className="salary-badge">Salary</span>}
+                            </div>
+                          )}
+                        </div>
                         <div className="income-actions">
                           <button
                             className="btn-icon"
@@ -1295,18 +1303,14 @@ function App() {
                           </button>
                         </div>
                       </div>
-                      {(income.isPrimary || income.isSalary) && (
-                        <div className="income-badges">
-                          {income.isPrimary && <span className="primary-badge"><Star size={11} /> Primary</span>}
-                          {income.isSalary && <span className="salary-badge">Salary</span>}
+                      <div className="income-info-row">
+                        <div className="income-amount">{formatCurrency(income.amount)}</div>
+                        <div className="income-details">
+                          {income.frequency} · Next: {formatDate(toDateKey(getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates)))}
+                          {income.isSalary && toDateKey(getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates)) !== income.dueDate && (
+                            <small>Adjusted from {formatDate(income.dueDate)}</small>
+                          )}
                         </div>
-                      )}
-                      <div className="income-amount">{formatCurrency(income.amount)}</div>
-                      <div className="income-details">
-                        {income.frequency} · Next: {formatDate(toDateKey(getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates)))}
-                        {income.isSalary && toDateKey(getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates)) !== income.dueDate && (
-                          <small>Adjusted from {formatDate(income.dueDate)}</small>
-                        )}
                       </div>
                     </div>
                   ))}
