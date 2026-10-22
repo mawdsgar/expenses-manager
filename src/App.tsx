@@ -33,6 +33,23 @@ import {
 } from 'lucide-react';
 import './App.css';
 
+const parseLocalDate = (date: string) => {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const addMonthsClamped = (date: Date, months: number) => {
+  const day = date.getDate();
+  const result = new Date(date.getFullYear(), date.getMonth() + months, 1);
+  const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+  result.setDate(Math.min(day, lastDay));
+  return result;
+};
+
+const formatScheduleDate = (date: Date) => date.toLocaleDateString('en-GB', {
+  day: 'numeric', month: 'short', year: 'numeric',
+});
+
 function App() {
   const [activeNavigation, setActiveNavigation] = useState('Overview');
   const [activeWorkspace, setActiveWorkspace] = useState<'overview' | 'renovation'>('overview');
@@ -851,6 +868,32 @@ function App() {
 
   // Calculate days until next payday (from primary income)
   const primaryIncome = incomes.find(income => income.isPrimary);
+  const weeklyAllowanceSchedule = (() => {
+    if (!primaryIncome || primaryIncome.frequency !== 'Monthly') return [];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let nextPayday = parseLocalDate(primaryIncome.dueDate);
+    nextPayday.setHours(0, 0, 0, 0);
+    while (nextPayday < today) nextPayday = addMonthsClamped(nextPayday, 1);
+    const cycleStart = addMonthsClamped(nextPayday, -1);
+    const cycleDays = Math.round((nextPayday.getTime() - cycleStart.getTime()) / 86400000);
+    const allowance = Number(foodKidsFuel) || 0;
+    const weeks: Array<{ week: number; start: Date; end: Date; amount: number }> = [];
+
+    for (let offset = 0, week = 1; offset < cycleDays; offset += 7, week += 1) {
+      const days = Math.min(7, cycleDays - offset);
+      const start = new Date(cycleStart);
+      start.setDate(start.getDate() + offset);
+      const end = new Date(start);
+      end.setDate(end.getDate() + days - 1);
+      const amount = week === Math.ceil(cycleDays / 7)
+        ? allowance - weeks.reduce((sum, item) => sum + item.amount, 0)
+        : Math.round((allowance * days / cycleDays) * 100) / 100;
+      weeks.push({ week, start, end, amount });
+    }
+    return weeks;
+  })();
   const daysUntilPayday = primaryIncome 
     ? Math.ceil((new Date(primaryIncome.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
@@ -1375,6 +1418,20 @@ function App() {
                           />
                         </div>
                       </div>
+                      {weeklyAllowanceSchedule.length > 0 && (
+                        <div className="weekly-allowance-schedule" aria-label="Weekly allowance transfer schedule">
+                          <div className="weekly-allowance-heading">
+                            <strong>Weekly spending transfers</strong>
+                            <span>Payday to payday</span>
+                          </div>
+                          {weeklyAllowanceSchedule.map(({ week, start, end, amount }) => (
+                            <div className="weekly-allowance-row" key={week}>
+                              <span>Week {week} <small>{formatScheduleDate(start)} – {formatScheduleDate(end)}</small></span>
+                              <strong>{formatCurrency(amount)}</strong>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       <div className="allowance-actions">
                         <button

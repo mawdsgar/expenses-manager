@@ -1523,6 +1523,51 @@ button {
   padding-top: 12px;
 }
 
+.weekly-allowance-schedule {
+  margin: 12px 0 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.weekly-allowance-heading,
+.weekly-allowance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weekly-allowance-heading {
+  margin-bottom: 7px;
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.weekly-allowance-heading span,
+.weekly-allowance-row small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.weekly-allowance-row {
+  min-height: 27px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.weekly-allowance-row small {
+  margin-left: 7px;
+}
+
+.weekly-allowance-row strong {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 .allowance-status {
   color: var(--text-muted);
   font-size: 11px;
