@@ -6,6 +6,7 @@ import { AddExpenseModal } from './components/AddExpenseModal';
 import { AddIncomeModal } from './components/AddIncomeModal';
 import { AddSavingsModal } from './components/AddSavingsModal';
 import { RenovationPlanner } from './features/renovation/RenovationPlanner';
+import { addMonthsClamped, formatPayDate, getAdjustedPayDate, loadEnglandWalesBankHolidays, toDateKey } from './utils/payday';
 import {
   AlertTriangle,
   CalendarDays,
@@ -33,23 +34,6 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const parseLocalDate = (date: string) => {
-  const [year, month, day] = date.split('-').map(Number);
-  return new Date(year, month - 1, day);
-};
-
-const addMonthsClamped = (date: Date, months: number) => {
-  const day = date.getDate();
-  const result = new Date(date.getFullYear(), date.getMonth() + months, 1);
-  const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
-  result.setDate(Math.min(day, lastDay));
-  return result;
-};
-
-const formatScheduleDate = (date: Date) => date.toLocaleDateString('en-GB', {
-  day: 'numeric', month: 'short', year: 'numeric',
-});
-
 function App() {
   const [activeNavigation, setActiveNavigation] = useState('Overview');
   const [activeWorkspace, setActiveWorkspace] = useState<'overview' | 'renovation'>('overview');
@@ -67,6 +51,8 @@ function App() {
     const saved = localStorage.getItem('incomes');
     return saved ? JSON.parse(saved) : [];
   });
+  const [bankHolidayDates, setBankHolidayDates] = useState<ReadonlySet<string>>(() => new Set());
+  const [bankHolidaysLoaded, setBankHolidaysLoaded] = useState(false);
 
   const [savings, setSavings] = useState<SavingsAccount[]>(() => {
     const saved = localStorage.getItem('savings');
@@ -182,6 +168,13 @@ function App() {
   }, [incomes]);
 
   useEffect(() => {
+    loadEnglandWalesBankHolidays().then((dates) => {
+      setBankHolidayDates(dates);
+      setBankHolidaysLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem('expensesCollapsed', String(expensesCollapsed));
   }, [expensesCollapsed]);
 
@@ -207,6 +200,7 @@ function App() {
         from: row.from,
         dueDate: row.due_date,
         isPrimary: row.is_primary,
+        isSalary: Boolean(row.is_salary),
       }));
       setIncomes(mapped);
     };
@@ -366,21 +360,29 @@ function App() {
 
   // Auto-update income due dates when they're reached
   useEffect(() => {
+    if (!bankHolidaysLoaded) return;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const updatedIncomes = incomes.map(income => {
-      const dueDate = new Date(income.dueDate);
-      dueDate.setHours(0, 0, 0, 0);
+      const scheduledDueDate = new Date(`${income.dueDate}T00:00:00`);
+      const payDate = getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates);
+      scheduledDueDate.setHours(0, 0, 0, 0);
 
-      // If due date is today, move it forward by one month
-      if (dueDate.getTime() === today.getTime() && income.frequency === 'Monthly') {
-        const newDueDate = new Date(income.dueDate);
-        newDueDate.setMonth(newDueDate.getMonth() + 1);
+      const recurringSalary = income.isSalary && income.frequency !== 'One-time';
+      const shouldAdvance = income.frequency === 'Monthly' || recurringSalary;
+      if (payDate.getTime() === today.getTime() && shouldAdvance) {
+        let newDueDate: Date;
+        if (income.frequency === 'Weekly') {
+          newDueDate = new Date(scheduledDueDate);
+          newDueDate.setDate(newDueDate.getDate() + 7);
+        } else {
+          newDueDate = addMonthsClamped(scheduledDueDate, income.frequency === 'Yearly' ? 12 : 1);
+        }
         
         const next = {
           ...income,
-          dueDate: newDueDate.toISOString().split('T')[0]
+          dueDate: toDateKey(newDueDate)
         };
         // Also persist to Supabase if enabled
         if (supabaseEnabled) {
@@ -402,7 +404,7 @@ function App() {
     if (JSON.stringify(updatedIncomes) !== JSON.stringify(incomes)) {
       setIncomes(updatedIncomes);
     }
-  }, [incomes]);
+  }, [incomes, bankHolidayDates, bankHolidaysLoaded]);
 
   const addExpense = (expense: Omit<Expense, 'id'>) => {
     const insert = async () => {
@@ -515,6 +517,7 @@ function App() {
             from: income.from,
             due_date: income.dueDate,
             is_primary: income.isPrimary,
+            is_salary: income.isSalary,
           })
           .select()
           .single();
@@ -529,6 +532,7 @@ function App() {
           from: data.from,
           dueDate: data.due_date,
           isPrimary: data.is_primary,
+          isSalary: Boolean(data.is_salary),
         };
         setIncomes([...incomes, newIncome]);
       } else {
@@ -551,6 +555,7 @@ function App() {
           from: income.from,
           due_date: income.dueDate,
           is_primary: income.isPrimary,
+          is_salary: income.isSalary,
         })
         .eq('id', income.id);
       if (error) console.error('Failed to update income in Supabase:', error.message);
@@ -873,10 +878,12 @@ function App() {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    let nextPayday = parseLocalDate(primaryIncome.dueDate);
-    nextPayday.setHours(0, 0, 0, 0);
-    while (nextPayday < today) nextPayday = addMonthsClamped(nextPayday, 1);
-    const cycleStart = addMonthsClamped(nextPayday, -1);
+    let scheduledNextPayday = new Date(`${primaryIncome.dueDate}T00:00:00`);
+    while (getAdjustedPayDate(toDateKey(scheduledNextPayday), primaryIncome.isSalary, bankHolidayDates) < today) {
+      scheduledNextPayday = addMonthsClamped(scheduledNextPayday, 1);
+    }
+    const nextPayday = getAdjustedPayDate(toDateKey(scheduledNextPayday), primaryIncome.isSalary, bankHolidayDates);
+    const cycleStart = getAdjustedPayDate(toDateKey(addMonthsClamped(scheduledNextPayday, -1)), primaryIncome.isSalary, bankHolidayDates);
     const cycleDays = Math.round((nextPayday.getTime() - cycleStart.getTime()) / 86400000);
     const allowance = Number(foodKidsFuel) || 0;
     const weeks: Array<{ week: number; start: Date; end: Date; amount: number }> = [];
@@ -894,14 +901,17 @@ function App() {
     }
     return weeks;
   })();
-  const daysUntilPayday = primaryIncome 
-    ? Math.ceil((new Date(primaryIncome.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  const primaryPayDate = primaryIncome
+    ? getAdjustedPayDate(primaryIncome.dueDate, primaryIncome.isSalary, bankHolidayDates)
+    : null;
+  const daysUntilPayday = primaryPayDate
+    ? Math.ceil((primaryPayDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   // Calculate left to go out: sum of unpaid expenses due between now and next payday
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const nextPaydayDate = primaryIncome ? new Date(primaryIncome.dueDate) : null;
+  const nextPaydayDate = primaryPayDate;
   nextPaydayDate?.setHours(0, 0, 0, 0);
   
   const unpaidExpensesDueBeforePayday = expenses
@@ -1285,10 +1295,18 @@ function App() {
                           </button>
                         </div>
                       </div>
-                      {income.isPrimary && <span className="primary-badge"><Star size={11} /> Primary</span>}
+                      {(income.isPrimary || income.isSalary) && (
+                        <div className="income-badges">
+                          {income.isPrimary && <span className="primary-badge"><Star size={11} /> Primary</span>}
+                          {income.isSalary && <span className="salary-badge">Salary</span>}
+                        </div>
+                      )}
                       <div className="income-amount">{formatCurrency(income.amount)}</div>
                       <div className="income-details">
-                        {income.frequency} · Next: {formatDate(income.dueDate)}
+                        {income.frequency} · Next: {formatDate(toDateKey(getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates)))}
+                        {income.isSalary && toDateKey(getAdjustedPayDate(income.dueDate, income.isSalary, bankHolidayDates)) !== income.dueDate && (
+                          <small>Adjusted from {formatDate(income.dueDate)}</small>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1426,8 +1444,8 @@ function App() {
                           </div>
                           {weeklyAllowanceSchedule.map(({ week, start, end, amount }) => (
                             <div className="weekly-allowance-row" key={week}>
-                              <span>Week {week} <small>{formatScheduleDate(start)} – {formatScheduleDate(end)}</small></span>
-                              <strong>{formatCurrency(amount)}</strong>
+                              <span>Week {week} <small>{formatPayDate(start)} – {formatPayDate(end)}</small></span>
+      <strong>{formatCurrency(amount)}</strong>
                             </div>
                           ))}
                         </div>

@@ -18,6 +18,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
   const [from, setFrom] = useState('');
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [isPrimary, setIsPrimary] = useState(false);
+  const [isSalary, setIsSalary] = useState(false);
   const [primaryError, setPrimaryError] = useState('');
 
   // Populate form when editing
@@ -29,6 +30,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
       setFrom(editingIncome.from);
       setDueDate(editingIncome.dueDate);
       setIsPrimary(editingIncome.isPrimary);
+      setIsSalary(editingIncome.isSalary ?? false);
     } else {
       // Reset form when not editing
       setAmount('');
@@ -36,6 +38,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
       setFrom('');
       setDueDate(new Date().toISOString().split('T')[0]);
       setIsPrimary(false);
+      setIsSalary(false);
     }
   }, [editingIncome, isOpen]);
 
@@ -62,6 +65,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
       from,
       dueDate,
       isPrimary,
+      isSalary,
     };
 
     if (editingIncome && onEdit) {
@@ -171,6 +175,19 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose,
                 {primaryError}
               </div>
             )}
+          </div>
+
+          <div className="form-group">
+            <div className="checkbox-group">
+              <input
+                type="checkbox"
+                id="isSalary"
+                checked={isSalary}
+                onChange={(e) => setIsSalary(e.target.checked)}
+              />
+              <label htmlFor="isSalary">Salary payment</label>
+            </div>
+            {isSalary && <p className="form-hint">If payday is on a weekend or England and Wales bank holiday, it moves to the previous working day.</p>}
           </div>
 
           <div className="modal-footer">

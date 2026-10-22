@@ -1366,6 +1366,34 @@ button {
   background: var(--green-soft);
 }
 
+.income-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.income-badges .primary-badge {
+  margin-top: 0;
+}
+
+.salary-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--blue-dark);
+  background: var(--blue-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.income-details small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-secondary);
+}
+
 .card-inline-summary,
 .card-footer-summary {
   display: flex;
@@ -3550,6 +3578,18 @@ button {
 
 #root .modal .form-input::placeholder {
   color: #a2acb8;
+}
+
+#root .modal .checkbox-group {
+  padding: 0 12px;
+  border: 1px solid #e3e9ef;
+  border-radius: 9px;
+  color: #253a52;
+  background: #f4f7f9;
+}
+
+#root .modal .checkbox-group input[type='checkbox'] {
+  accent-color: #129b72;
 }
 
 #root .modal .btn-icon,

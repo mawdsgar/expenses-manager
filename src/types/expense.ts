@@ -49,6 +49,7 @@ export interface Income {
   from: string;
   dueDate: string;
   isPrimary: boolean;
+  isSalary: boolean;
 }
 
 export interface SavingsAccount {

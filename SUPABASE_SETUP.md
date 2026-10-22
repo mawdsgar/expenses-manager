@@ -92,6 +92,7 @@ create table if not exists incomes (
    "from" text not null,
    due_date date not null,
    is_primary boolean not null default false,
+   is_salary boolean not null default false,
    created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
