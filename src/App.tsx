@@ -982,7 +982,7 @@ function App() {
       category,
       amount,
       percentage,
-      color: categoryColors[index % categoryColors.length],
+      color: category === 'Household Subs' ? '#e87924' : categoryColors[index % categoryColors.length],
       offset: categorySegmentOffset,
       length: Math.max(percentage - 1.2, 0.6),
     };
@@ -990,6 +990,7 @@ function App() {
     return segment;
   });
   const categoryBadgeColors = new Map(categorySegments.map(({ category, color }) => [category, color]));
+  categoryBadgeColors.set('Household Subs', '#e87924');
   const hoveredCategoryDetails = categorySegments.find((segment) => segment.category === hoveredCategory);
 
   const formatCurrency = (amount: number) => {

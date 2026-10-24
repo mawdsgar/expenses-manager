@@ -83,6 +83,7 @@ export type Category =
   | 'Savings'
   | 'Mobiles, TV & Internet'
   | 'Charity'
+  | 'Household Subs'
   | 'Other';
 
 export const categories: Category[] = [
@@ -101,5 +102,6 @@ export const categories: Category[] = [
   'Savings',
   'Mobiles, TV & Internet',
   'Charity',
+  'Household Subs',
   'Other',
 ];
