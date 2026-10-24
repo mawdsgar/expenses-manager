@@ -4181,3 +4181,18 @@ button {
 #root .category-donut-segment:focus-visible {
   outline: 2px solid #ffffff;
 }
+
+#root .expense-period-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+#root .expense-period-controls .btn-control {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 8px 10px;
+  font-size: 12px;
+}
