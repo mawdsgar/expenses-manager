@@ -794,8 +794,9 @@ function App() {
     // Store current state for undo
     setUndoExpenses([...expenses]);
 
-    // Update expenses: mark as unpaid and increment due dates
+    // Only paid expenses complete their current schedule and move forward.
     const updatedExpenses = expenses.map(expense => {
+      if (!expense.paid) return expense;
       if (expense.frequency === 'One-time') return { ...expense, paid: false, paidAmount: 0 };
       const currentDueDate = new Date(`${expense.dueDate}T00:00:00`);
       let newDueDate = new Date(currentDueDate);
@@ -825,6 +826,8 @@ function App() {
     // Persist to Supabase if enabled
     if (supabaseEnabled) {
       for (const expense of updatedExpenses) {
+        const previousExpense = expenses.find((item) => item.id === expense.id);
+        if (!previousExpense?.paid) continue;
         const { error } = await supabase
           .from('expenses')
           .update({
