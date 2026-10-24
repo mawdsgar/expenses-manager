@@ -68,6 +68,7 @@ function App() {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showSavingsModal, setShowSavingsModal] = useState(false);
   const [showNewCycleConfirm, setShowNewCycleConfirm] = useState(false);
+  const [showFollowingPayMonth, setShowFollowingPayMonth] = useState(false);
   const [showDeleteExpenseConfirm, setShowDeleteExpenseConfirm] = useState(false);
   const [expenseIdPendingDelete, setExpenseIdPendingDelete] = useState<string | null>(null);
   const [editingSavings, setEditingSavings] = useState<SavingsAccount | undefined>(undefined);
@@ -918,10 +919,13 @@ function App() {
     end.setHours(0, 0, 0, 0);
     return { start, end };
   })();
-  const expensesInPayPeriod = payPeriod
+  const displayedPayPeriod = payPeriod && showFollowingPayMonth
+    ? { start: payPeriod.end, end: addMonthsClamped(payPeriod.end, 1) }
+    : payPeriod;
+  const expensesInPayPeriod = displayedPayPeriod
     ? expenses.filter(expense => {
         const due = new Date(`${expense.dueDate}T00:00:00`);
-        return due >= payPeriod.start && due < payPeriod.end;
+        return due >= displayedPayPeriod.start && due < displayedPayPeriod.end;
       })
     : expenses;
   const totalExpenses = expensesInPayPeriod.reduce((sum, expense) => sum + expense.amount, 0);
@@ -1055,7 +1059,13 @@ function App() {
     return true;
   });
 
-  const sortedExpenses = [...filteredExpenses].sort((a, b) => {
+  const periodFilteredExpenses = displayedPayPeriod
+    ? filteredExpenses.filter(expense => {
+        const due = new Date(`${expense.dueDate}T00:00:00`);
+        return due >= displayedPayPeriod.start && due < displayedPayPeriod.end;
+      })
+    : filteredExpenses;
+  const sortedExpenses = [...periodFilteredExpenses].sort((a, b) => {
     const cmp = compareValues(a, b, sortField);
     return sortDir === 'asc' ? cmp : -cmp;
   });
@@ -1831,6 +1841,9 @@ function App() {
                 </div>
               )}
               <div className="table-controls">
+                <button className="btn-control" onClick={() => setShowFollowingPayMonth(value => !value)} aria-pressed={showFollowingPayMonth}>
+                  {showFollowingPayMonth ? 'Show current pay month' : 'Show following pay month'}
+                </button>
                 <button className="btn-control" onClick={exportToExcel}><Download size={15} /> Export</button>
                 <button className="btn-control" onClick={newCycle}><RotateCcw size={15} /> New cycle</button>
                 <button className="btn-control" onClick={markAllUnpaid}>Mark all unpaid</button>
