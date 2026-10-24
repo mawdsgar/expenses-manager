@@ -1871,6 +1871,27 @@ button {
   transition: background 130ms ease;
 }
 
+.expense-table tbody tr.payday-divider-row:hover {
+  background: transparent;
+}
+
+.expense-table .payday-divider-row td {
+  padding: 0;
+  border-bottom: 0;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.payday-divider-row span {
+  display: block;
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-top: 2px dotted #8793a2;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .expense-table tbody tr:hover {
   background: #f8fafc;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type RefObject } from 'react';
+import { Fragment, useState, useEffect, useRef, type RefObject } from 'react';
 import type { Expense, Income, SavingsAccount } from './types/expense';
 import { getExpensePaidAmount, getExpenseRemainingAmount, normaliseExpense } from './types/expense';
 import { supabase } from './lib/supabase';
@@ -865,15 +865,7 @@ function App() {
   }, 0);
 
   const totalIncome = totalIncomeFromSources;
-
-  const totalExpenses = expenses.reduce((sum, expense) => {
-    if (expense.frequency === 'Monthly') return sum + expense.amount;
-    if (expense.frequency === 'Weekly') return sum + (expense.amount * 4.33);
-    if (expense.frequency === 'Yearly') return sum + (expense.amount / 12);
-    if (expense.frequency === 'Custom') return sum + (expense.amount * 12 / ((expense.intervalUnit === 'Weeks' ? 52 : 12) / (expense.intervalCount || 1)));
-    if (expense.frequency === 'One-time') return sum + expense.amount;
-    return sum + expense.amount; // Default: treat as monthly
-  }, 0);
+  const primaryIncome = incomes.find(income => income.isPrimary);
 
   const totalSavings = savings.reduce((sum, account) => sum + account.balance, 0);
 
@@ -883,12 +875,7 @@ function App() {
     (parseFloat(allowance2) || 0) + 
     (parseFloat(foodKidsFuel) || 0);
 
-  // Total expenditure includes both expenses and allowances
-  const totalExpenditure = totalExpenses + totalAllowances;
-  const remainingIncome = totalIncome - totalExpenditure;
-
   // Calculate days until next payday (from primary income)
-  const primaryIncome = incomes.find(income => income.isPrimary);
   const weeklyAllowanceSchedule = (() => {
     if (!primaryIncome || primaryIncome.frequency !== 'Monthly') return [];
 
@@ -917,9 +904,32 @@ function App() {
     }
     return weeks;
   })();
-  const primaryPayDate = primaryIncome
+  const payPeriod = (() => {
+    if (!primaryIncome || primaryIncome.frequency !== 'Monthly') return null;
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    let nextScheduled = new Date(`${primaryIncome.dueDate}T00:00:00`);
+    while (getAdjustedPayDate(toDateKey(nextScheduled), primaryIncome.isSalary, bankHolidayDates) < todayDate) {
+      nextScheduled = addMonthsClamped(nextScheduled, 1);
+    }
+    const end = getAdjustedPayDate(toDateKey(nextScheduled), primaryIncome.isSalary, bankHolidayDates);
+    const start = getAdjustedPayDate(toDateKey(addMonthsClamped(nextScheduled, -1)), primaryIncome.isSalary, bankHolidayDates);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    return { start, end };
+  })();
+  const expensesInPayPeriod = payPeriod
+    ? expenses.filter(expense => {
+        const due = new Date(`${expense.dueDate}T00:00:00`);
+        return due >= payPeriod.start && due < payPeriod.end;
+      })
+    : expenses;
+  const totalExpenses = expensesInPayPeriod.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalExpenditure = totalExpenses + totalAllowances;
+  const remainingIncome = totalIncome - totalExpenditure;
+  const primaryPayDate = payPeriod?.end ?? (primaryIncome
     ? getAdjustedPayDate(primaryIncome.dueDate, primaryIncome.isSalary, bankHolidayDates)
-    : null;
+    : null);
   const daysUntilPayday = primaryPayDate
     ? Math.ceil((primaryPayDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
@@ -945,28 +955,14 @@ function App() {
   const leftToGoOut = unpaidExpensesDueBeforePayday;
 
   // Calculate expenses breakdown by account
-  const expensesByAccount = expenses.reduce((acc, expense) => {
-    const monthlyAmount = 
-      expense.frequency === 'Monthly' ? expense.amount :
-      expense.frequency === 'Weekly' ? expense.amount * 4.33 :
-      expense.frequency === 'Yearly' ? expense.amount / 12 :
-      expense.frequency === 'Custom' ? expense.amount * (expense.intervalUnit === 'Weeks' ? 52 : 12) / (expense.intervalCount || 1) / 12 :
-      expense.amount;
-    
-    acc[expense.account] = (acc[expense.account] || 0) + monthlyAmount;
+  const expensesByAccount = expensesInPayPeriod.reduce((acc, expense) => {
+    acc[expense.account] = (acc[expense.account] || 0) + expense.amount;
     return acc;
   }, {} as Record<string, number>);
 
   // Calculate expenses breakdown by category
-  const expensesByCategory = expenses.reduce((acc, expense) => {
-    const monthlyAmount = 
-      expense.frequency === 'Monthly' ? expense.amount :
-      expense.frequency === 'Weekly' ? expense.amount * 4.33 :
-      expense.frequency === 'Yearly' ? expense.amount / 12 :
-      expense.frequency === 'Custom' ? expense.amount * (expense.intervalUnit === 'Weeks' ? 52 : 12) / (expense.intervalCount || 1) / 12 :
-      expense.amount;
-    
-    acc[expense.category] = (acc[expense.category] || 0) + monthlyAmount;
+  const expensesByCategory = expensesInPayPeriod.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
     return acc;
   }, {} as Record<string, number>);
 
@@ -1936,9 +1932,17 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedExpenses.map((expense) => (
+                    {sortedExpenses.map((expense, index) => (
+                      <Fragment key={expense.id}>
+                      {primaryPayDate && sortField === 'dueDate' && sortDir === 'asc' &&
+                        (index === 0
+                          ? new Date(`${expense.dueDate}T00:00:00`) >= new Date(toDateKey(primaryPayDate))
+                          : new Date(`${sortedExpenses[index - 1].dueDate}T00:00:00`) < new Date(toDateKey(primaryPayDate)) && new Date(`${expense.dueDate}T00:00:00`) >= new Date(toDateKey(primaryPayDate))) && (
+                          <tr key={`payday-divider-${expense.id}`} className="payday-divider-row">
+                            <td colSpan={8}><span>Next payday · {formatDate(toDateKey(primaryPayDate))} · expenses below fall in the next pay period</span></td>
+                          </tr>
+                        )}
                       <tr
-                        key={expense.id}
                         className={expense.paid ? 'expense-row-paid' : getExpensePaidAmount(expense) > 0 ? 'expense-row-part-paid' : 'expense-row-unpaid'}
                       >
                         <td data-label="Paid">
@@ -2011,6 +2015,7 @@ function App() {
                           </button>
                         </td>
                       </tr>
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
