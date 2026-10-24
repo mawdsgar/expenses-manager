@@ -65,12 +65,20 @@ create table if not exists expenses (
    amount decimal(10, 2) not null,
    paid_amount decimal(10, 2) not null default 0,
    due_date date not null,
-   frequency text not null check (frequency in ('Monthly','Weekly','Yearly','One-time')),
+   frequency text not null check (frequency in ('Monthly','Weekly','Yearly','One-time','Custom')),
+   interval_count integer,
+   interval_unit text check (interval_unit in ('Weeks','Months')),
    category text not null,
    paid boolean default false,
    account text not null,
    created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- For existing installations, add custom expense interval support:
+alter table expenses drop constraint if exists expenses_frequency_check;
+alter table expenses add constraint expenses_frequency_check check (frequency in ('Monthly','Weekly','Yearly','One-time','Custom'));
+alter table expenses add column if not exists interval_count integer;
+alter table expenses add column if not exists interval_unit text check (interval_unit in ('Weeks','Months'));
 
 alter table expenses enable row level security;
 

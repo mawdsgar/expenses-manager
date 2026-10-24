@@ -5,6 +5,8 @@ export interface Expense {
   paidAmount: number;
   dueDate: string;
   frequency: Frequency;
+  intervalCount?: number;
+  intervalUnit?: 'Weeks' | 'Months';
   category: string;
   account: string;
   paid: boolean;
@@ -61,9 +63,9 @@ export interface SavingsAccount {
   isVariableRate: boolean;
 }
 
-export type Frequency = 'Monthly' | 'Weekly' | 'Yearly' | 'One-time';
+export type Frequency = 'Monthly' | 'Weekly' | 'Yearly' | 'One-time' | 'Custom';
 
-export const frequencies: Frequency[] = ['Monthly', 'Weekly', 'Yearly', 'One-time'];
+export const frequencies: Frequency[] = ['Monthly', 'Weekly', 'Yearly', 'One-time', 'Custom'];
 
 export type Category = 
   | 'Essential Household'

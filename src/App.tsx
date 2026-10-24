@@ -222,6 +222,8 @@ function App() {
         paidAmount: row.paid_amount == null ? undefined : Number(row.paid_amount),
         dueDate: row.due_date,
         frequency: row.frequency,
+        intervalCount: row.interval_count == null ? undefined : Number(row.interval_count),
+        intervalUnit: row.interval_unit || undefined,
         category: row.category,
         paid: Boolean(row.paid),
         account: row.account,
@@ -417,6 +419,8 @@ function App() {
             paid_amount: expense.paidAmount,
             due_date: expense.dueDate,
             frequency: expense.frequency,
+            interval_count: expense.frequency === 'Custom' ? expense.intervalCount : null,
+            interval_unit: expense.frequency === 'Custom' ? expense.intervalUnit : null,
             category: expense.category,
             paid: expense.paid,
             account: expense.account,
@@ -434,6 +438,8 @@ function App() {
           paidAmount: data.paid_amount == null ? expense.paidAmount : Number(data.paid_amount),
           dueDate: data.due_date,
           frequency: data.frequency,
+          intervalCount: data.interval_count == null ? expense.intervalCount : Number(data.interval_count),
+          intervalUnit: data.interval_unit || expense.intervalUnit,
           category: data.category,
           paid: Boolean(data.paid),
           account: data.account,
@@ -460,6 +466,8 @@ function App() {
           paid_amount: updatedExpense.paidAmount,
           due_date: updatedExpense.dueDate,
           frequency: updatedExpense.frequency,
+          interval_count: updatedExpense.frequency === 'Custom' ? updatedExpense.intervalCount : null,
+          interval_unit: updatedExpense.frequency === 'Custom' ? updatedExpense.intervalUnit : null,
           category: updatedExpense.category,
           paid: updatedExpense.paid,
           account: updatedExpense.account,
@@ -788,7 +796,8 @@ function App() {
 
     // Update expenses: mark as unpaid and increment due dates
     const updatedExpenses = expenses.map(expense => {
-      const currentDueDate = new Date(expense.dueDate);
+      if (expense.frequency === 'One-time') return { ...expense, paid: false, paidAmount: 0 };
+      const currentDueDate = new Date(`${expense.dueDate}T00:00:00`);
       let newDueDate = new Date(currentDueDate);
 
       // Increment based on frequency
@@ -798,13 +807,16 @@ function App() {
         newDueDate.setDate(newDueDate.getDate() + 7);
       } else if (expense.frequency === 'Yearly') {
         newDueDate.setFullYear(newDueDate.getFullYear() + 1);
+      } else if (expense.frequency === 'Custom') {
+        if (expense.intervalUnit === 'Weeks') newDueDate.setDate(newDueDate.getDate() + 7 * (expense.intervalCount || 1));
+        else newDueDate.setMonth(newDueDate.getMonth() + (expense.intervalCount || 1));
       }
 
       return {
         ...expense,
         paid: false,
         paidAmount: 0,
-        dueDate: newDueDate.toISOString().split('T')[0]
+        dueDate: toDateKey(newDueDate)
       };
     });
 
@@ -855,6 +867,7 @@ function App() {
     if (expense.frequency === 'Monthly') return sum + expense.amount;
     if (expense.frequency === 'Weekly') return sum + (expense.amount * 4.33);
     if (expense.frequency === 'Yearly') return sum + (expense.amount / 12);
+    if (expense.frequency === 'Custom') return sum + (expense.amount * 12 / ((expense.intervalUnit === 'Weeks' ? 52 : 12) / (expense.intervalCount || 1)));
     if (expense.frequency === 'One-time') return sum + expense.amount;
     return sum + expense.amount; // Default: treat as monthly
   }, 0);
@@ -934,6 +947,7 @@ function App() {
       expense.frequency === 'Monthly' ? expense.amount :
       expense.frequency === 'Weekly' ? expense.amount * 4.33 :
       expense.frequency === 'Yearly' ? expense.amount / 12 :
+      expense.frequency === 'Custom' ? expense.amount * (expense.intervalUnit === 'Weeks' ? 52 : 12) / (expense.intervalCount || 1) / 12 :
       expense.amount;
     
     acc[expense.account] = (acc[expense.account] || 0) + monthlyAmount;
@@ -946,6 +960,7 @@ function App() {
       expense.frequency === 'Monthly' ? expense.amount :
       expense.frequency === 'Weekly' ? expense.amount * 4.33 :
       expense.frequency === 'Yearly' ? expense.amount / 12 :
+      expense.frequency === 'Custom' ? expense.amount * (expense.intervalUnit === 'Weeks' ? 52 : 12) / (expense.intervalCount || 1) / 12 :
       expense.amount;
     
     acc[expense.category] = (acc[expense.category] || 0) + monthlyAmount;
@@ -1969,7 +1984,7 @@ function App() {
                         <td data-label="Next Due" style={{ color: 'var(--text-secondary)' }}>
                           {formatDate(expense.dueDate)}
                         </td>
-                        <td data-label="Frequency" style={{ color: 'var(--text-secondary)' }}>{expense.frequency}</td>
+                        <td data-label="Frequency" style={{ color: 'var(--text-secondary)' }}>{expense.frequency === 'Custom' ? `Every ${expense.intervalCount ?? 1} ${expense.intervalUnit?.toLowerCase() ?? 'weeks'}` : expense.frequency}</td>
                         <td data-label="Account">
                           <span className={`account-badge ${expense.account.toLowerCase().replace(' ', '')}`}>
                             {expense.account}

@@ -19,6 +19,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
   const [paidAmount, setPaidAmount] = useState('0');
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [frequency, setFrequency] = useState<Frequency>('Monthly');
+  const [intervalCount, setIntervalCount] = useState(6);
+  const [intervalUnit, setIntervalUnit] = useState<'Weeks' | 'Months'>('Weeks');
   const [account, setAccount] = useState(accounts[0] || '');
   const [category, setCategory] = useState<string>(categories[0]);
   const [showAccountInput, setShowAccountInput] = useState(false);
@@ -49,6 +51,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
       setPaidAmount((editingExpense.paidAmount ?? (editingExpense.paid ? editingExpense.amount : 0)).toString());
       setDueDate(editingExpense.dueDate);
       setFrequency(editingExpense.frequency);
+      setIntervalCount(editingExpense.intervalCount ?? 6);
+      setIntervalUnit(editingExpense.intervalUnit ?? 'Weeks');
       setAccount(editingExpense.account);
       setCategory(editingExpense.category);
     } else {
@@ -87,6 +91,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
         paid: isPaidInFull,
         dueDate,
         frequency,
+        intervalCount,
+        intervalUnit,
         account,
         category,
       });
@@ -98,6 +104,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
         paidAmount: recordedPaidAmount,
         dueDate,
         frequency,
+        intervalCount,
+        intervalUnit,
         account,
         category,
         paid: isPaidInFull,
@@ -168,6 +176,16 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
               required
             />
           </div>
+
+          {frequency === 'Custom' && <div className="form-group">
+            <label className="form-label">Repeat every</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input className="form-input" type="number" min="1" max="60" value={intervalCount} onChange={e => setIntervalCount(Math.max(1, Number(e.target.value)))} />
+              <select className="form-select" value={intervalUnit} onChange={e => setIntervalUnit(e.target.value as 'Weeks' | 'Months')}>
+                <option value="Weeks">Weeks</option><option value="Months">Months</option>
+              </select>
+            </div>
+          </div>}
 
           <div className="form-group">
             <label className="form-label">Amount</label>

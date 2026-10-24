@@ -30,6 +30,8 @@ export const useExpenses = () => {
         paid: Boolean(item.paid),
         account: item.account,
         frequency: item.frequency || 'Monthly',
+        intervalCount: item.interval_count == null ? undefined : Number(item.interval_count),
+        intervalUnit: item.interval_unit || undefined,
       }));
 
       setExpenses(transformedExpenses);
@@ -52,6 +54,9 @@ export const useExpenses = () => {
             amount: expense.amount,
             paid_amount: expense.paidAmount,
             due_date: expense.dueDate,
+            frequency: expense.frequency,
+            interval_count: expense.frequency === 'Custom' ? expense.intervalCount : null,
+            interval_unit: expense.frequency === 'Custom' ? expense.intervalUnit : null,
             category: expense.category,
             paid: expense.paid,
             account: expense.account,
@@ -73,6 +78,8 @@ export const useExpenses = () => {
         paid: Boolean(data.paid),
         account: data.account,
         frequency: data.frequency || 'Monthly',
+        intervalCount: data.interval_count == null ? undefined : Number(data.interval_count),
+        intervalUnit: data.interval_unit || undefined,
       });
 
       setExpenses([...expenses, newExpense]);
