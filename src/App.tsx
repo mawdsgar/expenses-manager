@@ -1841,7 +1841,11 @@ function App() {
                 </div>
               )}
               <div className="table-controls">
-                <button className="btn-control" onClick={() => setShowFollowingPayMonth(value => !value)} aria-pressed={showFollowingPayMonth}>
+                <button className="btn-control" onClick={() => {
+                  setShowFollowingPayMonth(value => !value);
+                  setFromDate('');
+                  setToDate('');
+                }} aria-pressed={showFollowingPayMonth}>
                   {showFollowingPayMonth ? 'Show current pay month' : 'Show following pay month'}
                 </button>
                 <button className="btn-control" onClick={exportToExcel}><Download size={15} /> Export</button>
@@ -2035,7 +2039,7 @@ function App() {
               )}
               <div className="displayed-expenses-total" aria-live="polite">
                 <span className="displayed-expenses-total-badge">
-                {paymentFilters.includes('Paid') ? 'Total' : 'Left to pay'}: {formatCurrency(filteredExpenses.reduce((total, expense) => total + (paymentFilters.includes('Paid') ? expense.amount : getExpenseRemainingAmount(expense)), 0))}
+                {paymentFilters.includes('Paid') ? 'Total' : 'Left to pay'}: {formatCurrency(periodFilteredExpenses.reduce((total, expense) => total + (paymentFilters.includes('Paid') ? expense.amount : getExpenseRemainingAmount(expense)), 0))}
                 </span>
               </div>
             </div>
