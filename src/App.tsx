@@ -68,7 +68,7 @@ function App() {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showSavingsModal, setShowSavingsModal] = useState(false);
   const [showNewCycleConfirm, setShowNewCycleConfirm] = useState(false);
-  const [showFollowingPayMonth, setShowFollowingPayMonth] = useState(false);
+  const [expensePeriodView, setExpensePeriodView] = useState<'current' | 'following' | 'all'>('current');
   const [showDeleteExpenseConfirm, setShowDeleteExpenseConfirm] = useState(false);
   const [expenseIdPendingDelete, setExpenseIdPendingDelete] = useState<string | null>(null);
   const [editingSavings, setEditingSavings] = useState<SavingsAccount | undefined>(undefined);
@@ -919,9 +919,9 @@ function App() {
     end.setHours(0, 0, 0, 0);
     return { start, end };
   })();
-  const displayedPayPeriod = payPeriod && showFollowingPayMonth
+  const displayedPayPeriod = payPeriod && expensePeriodView !== 'all' && expensePeriodView === 'following'
     ? { start: payPeriod.end, end: addMonthsClamped(payPeriod.end, 1) }
-    : payPeriod;
+    : expensePeriodView === 'all' ? null : payPeriod;
   const expensesInPayPeriod = displayedPayPeriod
     ? expenses.filter(expense => {
         const due = new Date(`${expense.dueDate}T00:00:00`);
@@ -1841,13 +1841,11 @@ function App() {
                 </div>
               )}
               <div className="table-controls">
-                <button className="btn-control" onClick={() => {
-                  setShowFollowingPayMonth(value => !value);
-                  setFromDate('');
-                  setToDate('');
-                }} aria-pressed={showFollowingPayMonth}>
-                  {showFollowingPayMonth ? 'Show current pay month' : 'Show following pay month'}
-                </button>
+                <div className="expense-period-controls" role="group" aria-label="Expense pay month view">
+                  <button className="btn-control" onClick={() => { setExpensePeriodView('current'); setFromDate(''); setToDate(''); }} aria-pressed={expensePeriodView === 'current'}>Current pay month</button>
+                  <button className="btn-control" onClick={() => { setExpensePeriodView('following'); setFromDate(''); setToDate(''); }} aria-pressed={expensePeriodView === 'following'}>Following pay month</button>
+                  <button className="btn-control" onClick={() => { setExpensePeriodView('all'); setFromDate(''); setToDate(''); }} aria-pressed={expensePeriodView === 'all'}>All expenses</button>
+                </div>
                 <button className="btn-control" onClick={exportToExcel}><Download size={15} /> Export</button>
                 <button className="btn-control" onClick={newCycle}><RotateCcw size={15} /> New cycle</button>
                 <button className="btn-control" onClick={markAllUnpaid}>Mark all unpaid</button>
@@ -1951,7 +1949,7 @@ function App() {
                   <tbody>
                     {sortedExpenses.map((expense, index) => (
                       <Fragment key={expense.id}>
-                      {primaryPayDate && sortField === 'dueDate' && sortDir === 'asc' &&
+                      {expensePeriodView === 'all' && primaryPayDate && sortField === 'dueDate' && sortDir === 'asc' &&
                         (index === 0
                           ? new Date(`${expense.dueDate}T00:00:00`) >= new Date(toDateKey(primaryPayDate))
                           : new Date(`${sortedExpenses[index - 1].dueDate}T00:00:00`) < new Date(toDateKey(primaryPayDate)) && new Date(`${expense.dueDate}T00:00:00`) >= new Date(toDateKey(primaryPayDate))) && (
