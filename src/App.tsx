@@ -1069,6 +1069,18 @@ function App() {
     const cmp = compareValues(a, b, sortField);
     return sortDir === 'asc' ? cmp : -cmp;
   });
+  const paydayDividerForExpense = (index: number) => {
+    if (expensePeriodView !== 'all' || !primaryPayDate || sortField !== 'dueDate' || sortDir !== 'asc') return null;
+    const previousDate = index === 0 ? null : new Date(`${sortedExpenses[index - 1].dueDate}T00:00:00`);
+    const currentDate = new Date(`${sortedExpenses[index].dueDate}T00:00:00`);
+    let payday = new Date(primaryPayDate);
+    payday.setHours(0, 0, 0, 0);
+    while (previousDate && payday <= previousDate) {
+      payday = getAdjustedPayDate(toDateKey(addMonthsClamped(payday, 1)), primaryIncome?.isSalary ?? false, bankHolidayDates);
+      payday.setHours(0, 0, 0, 0);
+    }
+    return payday <= currentDate ? payday : null;
+  };
 
   const incomeCardRef = useRef<HTMLDivElement>(null);
   const expensesCardRef = useRef<HTMLDivElement>(null);
@@ -1949,12 +1961,9 @@ function App() {
                   <tbody>
                     {sortedExpenses.map((expense, index) => (
                       <Fragment key={expense.id}>
-                      {expensePeriodView === 'all' && primaryPayDate && sortField === 'dueDate' && sortDir === 'asc' &&
-                        (index === 0
-                          ? new Date(`${expense.dueDate}T00:00:00`) >= new Date(toDateKey(primaryPayDate))
-                          : new Date(`${sortedExpenses[index - 1].dueDate}T00:00:00`) < new Date(toDateKey(primaryPayDate)) && new Date(`${expense.dueDate}T00:00:00`) >= new Date(toDateKey(primaryPayDate))) && (
-                          <tr key={`payday-divider-${expense.id}`} className="payday-divider-row">
-                            <td colSpan={8}><span>Next payday · {formatDate(toDateKey(primaryPayDate))} · expenses below fall in the next pay period</span></td>
+                      {paydayDividerForExpense(index) && (
+                          <tr className="payday-divider-row">
+                            <td colSpan={8}><span>Payday · {formatDate(toDateKey(paydayDividerForExpense(index)!))} · start of new pay month</span></td>
                           </tr>
                         )}
                       <tr
