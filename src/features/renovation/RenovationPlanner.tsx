@@ -306,6 +306,14 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                       {monthData.tasks.length === 0 && (
                         <span className="empty-month">Drop work here</span>
                       )}
+                      <button
+                        type="button"
+                        className="month-add-button"
+                        onClick={() => openAddTask(monthData.month)}
+                        aria-label={`Add expense to ${formatMonth(monthData.month)}`}
+                      >
+                        <Plus size={13} /> Add expense
+                      </button>
                     </div>
                     <footer>
                       <div className="timeline-month-balance">
@@ -314,14 +322,6 @@ export function RenovationPlanner({ currentSavings }: RenovationPlannerProps) {
                           {money(monthData.endingBalance)}
                         </strong>
                       </div>
-                      <button
-                        type="button"
-                        className="month-add-button"
-                        onClick={() => openAddTask(monthData.month)}
-                        aria-label={`Add work to ${formatMonth(monthData.month)}`}
-                      >
-                        <Plus size={13} /> Work
-                      </button>
                     </footer>
                   </article>
                 );
