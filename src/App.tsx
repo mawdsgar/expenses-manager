@@ -68,6 +68,7 @@ function App() {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showSavingsModal, setShowSavingsModal] = useState(false);
   const [showNewCycleConfirm, setShowNewCycleConfirm] = useState(false);
+  const [allowancePeriodView, setAllowancePeriodView] = useState<'current' | 'following'>('current');
   const [expensePeriodView, setExpensePeriodView] = useState<'current' | 'following' | 'all'>('current');
   const [showDeleteExpenseConfirm, setShowDeleteExpenseConfirm] = useState(false);
   const [expenseIdPendingDelete, setExpenseIdPendingDelete] = useState<string | null>(null);
@@ -886,6 +887,9 @@ function App() {
     while (getAdjustedPayDate(toDateKey(scheduledNextPayday), primaryIncome.isSalary, bankHolidayDates) < today) {
       scheduledNextPayday = addMonthsClamped(scheduledNextPayday, 1);
     }
+    if (allowancePeriodView === 'following') {
+      scheduledNextPayday = addMonthsClamped(scheduledNextPayday, 1);
+    }
     const nextPayday = getAdjustedPayDate(toDateKey(scheduledNextPayday), primaryIncome.isSalary, bankHolidayDates);
     const cycleStart = getAdjustedPayDate(toDateKey(addMonthsClamped(scheduledNextPayday, -1)), primaryIncome.isSalary, bankHolidayDates);
     const cycleDays = Math.round((nextPayday.getTime() - cycleStart.getTime()) / 86400000);
@@ -1482,6 +1486,10 @@ function App() {
                           <div className="weekly-allowance-heading">
                             <strong>Weekly spending transfers</strong>
                             <span>Payday to payday</span>
+                          </div>
+                          <div className="weekly-allowance-period" role="group" aria-label="Weekly spending pay month">
+                            <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'current'} onClick={() => setAllowancePeriodView('current')}>Current pay month</button>
+                            <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'following'} onClick={() => setAllowancePeriodView('following')}>Following pay month</button>
                           </div>
                           {weeklyAllowanceSchedule.map(({ week, start, end, amount }) => (
                             <div className="weekly-allowance-row" key={week}>

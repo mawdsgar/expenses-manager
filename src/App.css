@@ -4196,3 +4196,22 @@ button {
   padding: 8px 10px;
   font-size: 12px;
 }
+
+.weekly-allowance-period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.weekly-allowance-period .btn-control {
+  font-size: 10px;
+  padding: 6px 9px;
+}
+
+.weekly-allowance-period .btn-control[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--surface-alt, var(--surface));
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
