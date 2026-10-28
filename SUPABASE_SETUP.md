@@ -193,3 +193,10 @@ Current/following pay-month selection scopes both personal payment histories
 and household transfer schedules. Payments can be removed after confirmation
 to correct an entry. The app uses local storage only when cloud mode is disabled;
 cloud errors are shown and are never reported as a successful local save.
+
+Personal allowance labels are configurable through the Allowance name fields.
+Apply `supabase/migrations/20261028092209_personal_allowance_names.sql` to add
+`allowance_name_1` and `allowance_name_2` to the existing allowances row. Names
+are saved with Save allowances, trimmed, limited to 60 characters, and default
+to Personal Allowance 1/2 if blank. Payment records continue to use the stable
+person identifier, so renaming does not move or reset payment history.

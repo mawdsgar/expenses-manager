@@ -135,6 +135,8 @@ function App() {
     const saved = localStorage.getItem('allowance2');
     return saved || '';
   });
+  const [allowanceName1, setAllowanceName1] = useState(() => localStorage.getItem('allowanceName1') || 'Personal Allowance 1');
+  const [allowanceName2, setAllowanceName2] = useState(() => localStorage.getItem('allowanceName2') || 'Personal Allowance 2');
   const [foodKidsFuel, setFoodKidsFuel] = useState(() => {
     const saved = localStorage.getItem('foodKidsFuel');
     return saved || '';
@@ -143,6 +145,8 @@ function App() {
     allowance1: localStorage.getItem('allowance1') || '',
     allowance2: localStorage.getItem('allowance2') || '',
     foodKidsFuel: localStorage.getItem('foodKidsFuel') || '',
+    allowanceName1: localStorage.getItem('allowanceName1') || 'Personal Allowance 1',
+    allowanceName2: localStorage.getItem('allowanceName2') || 'Personal Allowance 2',
   }));
   const [allowancesDirty, setAllowancesDirty] = useState(false);
   const [isSavingAllowances, setIsSavingAllowances] = useState(false);
@@ -273,6 +277,8 @@ function App() {
       if (data && data.length > 0) {
         const row = data[0];
         setAllowancesRowId(row.id ?? null);
+        setAllowanceName1(row.allowance_name_1 || 'Personal Allowance 1');
+        setAllowanceName2(row.allowance_name_2 || 'Personal Allowance 2');
         setAllowance1(row.allowance1 != null ? String(row.allowance1) : '');
         setAllowance2(row.allowance2 != null ? String(row.allowance2) : '');
         setFoodKidsFuel(row.food_kids_fuel != null ? String(row.food_kids_fuel) : '');
@@ -280,6 +286,8 @@ function App() {
           allowance1: row.allowance1 != null ? String(row.allowance1) : '',
           allowance2: row.allowance2 != null ? String(row.allowance2) : '',
           foodKidsFuel: row.food_kids_fuel != null ? String(row.food_kids_fuel) : '',
+          allowanceName1: row.allowance_name_1 || 'Personal Allowance 1',
+          allowanceName2: row.allowance_name_2 || 'Personal Allowance 2',
         });
       }
       setAllowancesLoaded(true);
@@ -315,13 +323,17 @@ function App() {
     setAllowancesDirty(
       allowance1 !== allowancesLastSaved.allowance1 ||
       allowance2 !== allowancesLastSaved.allowance2 ||
+      allowanceName1 !== allowancesLastSaved.allowanceName1 ||
+      allowanceName2 !== allowancesLastSaved.allowanceName2 ||
       foodKidsFuel !== allowancesLastSaved.foodKidsFuel
     );
-  }, [allowance1, allowance2, foodKidsFuel, allowancesLastSaved, allowancesLoaded]);
+  }, [allowance1, allowance2, allowanceName1, allowanceName2, foodKidsFuel, allowancesLastSaved, allowancesLoaded]);
 
   const saveAllowances = async () => {
     if (!allowancesLoaded) return;
 
+    const savedName1 = allowanceName1.trim() || 'Personal Allowance 1';
+    const savedName2 = allowanceName2.trim() || 'Personal Allowance 2';
     setIsSavingAllowances(true);
     setAllowancesSaveError(null);
 
@@ -329,6 +341,8 @@ function App() {
       allowance1: Number(allowance1) || 0,
       allowance2: Number(allowance2) || 0,
       food_kids_fuel: Number(foodKidsFuel) || 0,
+      allowance_name_1: savedName1,
+      allowance_name_2: savedName2,
     };
 
     try {
@@ -354,7 +368,11 @@ function App() {
       localStorage.setItem('allowance1', allowance1);
       localStorage.setItem('allowance2', allowance2);
       localStorage.setItem('foodKidsFuel', foodKidsFuel);
-      setAllowancesLastSaved({ allowance1, allowance2, foodKidsFuel });
+      localStorage.setItem('allowanceName1', savedName1);
+      localStorage.setItem('allowanceName2', savedName2);
+      setAllowanceName1(savedName1);
+      setAllowanceName2(savedName2);
+      setAllowancesLastSaved({ allowance1, allowance2, foodKidsFuel, allowanceName1: savedName1, allowanceName2: savedName2 });
     } catch (error: any) {
       console.error('Failed to save allowances:', error?.message || error);
       setAllowancesSaveError(error?.message || 'Failed to save allowances');
@@ -1453,12 +1471,13 @@ function App() {
                         <p className="allowance-hint">A monthly allowance for each person to spend however they wish. Pay it all at once or in smaller amounts throughout the pay month.</p>
                         {weeklyAllowanceSchedule.length > 0 ? <div className="personal-allowance-grid">
                           {[1, 2].map(person => <PersonalAllowance key={`${person}-${toDateKey(weeklyAllowanceSchedule[0].start)}`} person={person}
+                            name={person === 1 ? allowanceName1 : allowanceName2} onNameChange={person === 1 ? setAllowanceName1 : setAllowanceName2}
                             allowance={person === 1 ? allowance1 : allowance2} onChange={person === 1 ? setAllowance1 : setAllowance2}
                             periodStart={toDateKey(weeklyAllowanceSchedule[0].start)} periodEnd={toDateKey(weeklyAllowanceSchedule[weeklyAllowanceSchedule.length - 1].end)}
                             cloudEnabled={supabaseEnabled} budgetSaved={allowancesLoaded && !allowancesDirty && !isSavingAllowances} />)}
                         </div> : <>
                           <p className="allowance-hint">Set a primary monthly income to track payments by pay month.</p>
-                          {[1, 2].map(person => <div className="allowance-item" key={person}><label htmlFor={`allowance-${person}`}>Personal Allowance {person} · monthly amount</label><div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" step="0.01" value={person === 1 ? allowance1 : allowance2} onChange={e => (person === 1 ? setAllowance1 : setAllowance2)(e.target.value)} /></div></div>)}
+                          {[1, 2].map(person => <div className="allowance-item" key={person}><label className="allowance-name-field">Allowance name<input type="text" maxLength={60} aria-label={`Personal allowance ${person} name`} value={person === 1 ? allowanceName1 : allowanceName2} onChange={e => (person === 1 ? setAllowanceName1 : setAllowanceName2)(e.target.value)} /></label><label htmlFor={`allowance-${person}`}>Monthly amount</label><div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" step="0.01" value={person === 1 ? allowance1 : allowance2} onChange={e => (person === 1 ? setAllowance1 : setAllowance2)(e.target.value)} /></div></div>)}
                         </>}
                         <p className="allowance-hint">Paid out records money handed over, not personal spending. Recording it does not add another expense.</p>
                       </section>

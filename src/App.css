@@ -4245,3 +4245,7 @@ button {
 .personal-remove-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 @media (max-width: 1100px) { .personal-allowance-grid { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .allowance-group { padding: 12px; } .personal-allowance-card { padding: 10px; } .personal-allowance-card .allowance-item { flex-wrap: wrap; } .allowance-pay-month .weekly-allowance-period { flex-wrap: wrap; } .weekly-allowance-row small { display: block; margin-left: 0; } }
+
+.allowance-name-field { display: grid; gap: 6px; margin-bottom: 12px; color: var(--text-secondary); font-size: 11px; }
+.allowance-name-field input { box-sizing: border-box; width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 7px; padding: 9px 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; }
+.allowance-name-field input:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
