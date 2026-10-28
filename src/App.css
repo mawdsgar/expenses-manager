@@ -4311,3 +4311,10 @@ button {
 
 #root .table-controls { flex-wrap: wrap; }
 #root .date-range { flex-wrap: wrap; min-width: 0; }
+
+/* Keep the selected pay-month filter visible across dark surfaces and hover states. */
+#root .weekly-allowance-period .btn-control[aria-pressed="true"],
+#root .expense-period-controls .btn-control[aria-pressed="true"] {
+  border-color: #2dd4a0;
+  box-shadow: inset 0 0 0 1px #2dd4a0;
+}
