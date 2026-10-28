@@ -6,7 +6,8 @@ type Payment = { id: string; person: number; period_start: string; paid_on: stri
 const money = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value);
 const localKey = 'personalAllowancePayments';
 
-export function PersonalAllowance({ person, name, onNameChange, allowance, onChange, periodStart, periodEnd, cloudEnabled, budgetSaved }: {
+export function PersonalAllowance({ person, name, onNameChange, onSaveName, nameSaving, nameSaveDisabled, nameDirty, nameError, allowance, onChange, periodStart, periodEnd, cloudEnabled, budgetSaved }: {
+  onSaveName: () => void; nameSaving: boolean; nameSaveDisabled: boolean; nameDirty: boolean; nameError: string;
   person: number; name: string; onNameChange: (value: string) => void; allowance: string; onChange: (value: string) => void;
   periodStart: string; periodEnd: string; cloudEnabled: boolean; budgetSaved: boolean;
 }) {
@@ -90,9 +91,13 @@ export function PersonalAllowance({ person, name, onNameChange, allowance, onCha
     } finally { setBusy(false); inFlight.current = false; }
   };
   return <section className="personal-allowance-card" aria-label={name.trim() || `Personal Allowance ${person}`}>
-    <label className="allowance-name-field" htmlFor={`allowance-name-${person}`}>Allowance name
-      <input id={`allowance-name-${person}`} type="text" maxLength={60} placeholder={`Personal Allowance ${person}`} value={name} onChange={e => onNameChange(e.target.value)} />
-    </label>
+    <form className="allowance-name-form" onSubmit={e => { e.preventDefault(); if (nameDirty && !nameSaveDisabled) onSaveName(); }}>
+      <label className="allowance-name-field" htmlFor={`allowance-name-${person}`}>Allowance name
+        <input id={`allowance-name-${person}`} type="text" maxLength={60} placeholder={`Personal Allowance ${person}`} value={name} onChange={e => onNameChange(e.target.value)} />
+      </label>
+      <button type="submit" className="btn-control" disabled={nameSaveDisabled || !nameDirty}>{nameSaving ? 'Saving…' : 'Save name'}</button>
+      <span className={nameError ? 'allowance-status-error' : 'allowance-status'} role="status">{nameError || (nameDirty ? 'Unsaved name' : 'Name saved')}</span>
+    </form>
     <div className="allowance-item">
       <label htmlFor={`allowance-${person}`}>Monthly amount<small>Yours to spend as you wish</small></label>
       <div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" step="0.01" placeholder="0.00" value={allowance} onChange={e => onChange(e.target.value)} /></div>

@@ -4249,3 +4249,8 @@ button {
 .allowance-name-field { display: grid; gap: 6px; margin-bottom: 12px; color: var(--text-secondary); font-size: 11px; }
 .allowance-name-field input { box-sizing: border-box; width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 7px; padding: 9px 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; }
 .allowance-name-field input:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+
+.allowance-name-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-bottom: 12px; }
+.allowance-name-form .allowance-name-field { flex: 1 1 150px; margin-bottom: 0; }
+.allowance-name-form .btn-control { min-height: 37px; }
+.allowance-name-form [role="status"] { flex-basis: 100%; font-size: 11px; }
