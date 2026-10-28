@@ -103,7 +103,7 @@ export function PersonalAllowance({ person, name, onNameChange, onSaveName, name
     </form>
     <form className="allowance-amount-form" onSubmit={e => { e.preventDefault(); if (amountDirty && !amountSaveDisabled) onSaveAmount(); }}>
       <div className="allowance-item">
-        <label htmlFor={`allowance-${person}`}>Monthly amount<small>Yours to spend as you wish</small></label>
+        <label htmlFor={`allowance-${person}`}>Monthly amount</label>
         <div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" max="9999999999.99" step="0.01" required placeholder="0.00" value={allowance} onChange={e => onChange(e.target.value)} /></div>
       </div>
       <div className="allowance-amount-actions">
