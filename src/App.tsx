@@ -385,7 +385,7 @@ function App() {
   const [savingAllowanceName, setSavingAllowanceName] = useState<number | null>(null);
   const [allowanceNameErrors, setAllowanceNameErrors] = useState<Record<number, string>>({});
   const saveAllowanceName = async (person: number) => {
-    if (!allowancesLoaded || savingAllowanceName !== null || isSavingAllowances) return;
+    if (!allowancesLoaded || savingAllowanceName !== null || savingAllowanceAmount !== null || isSavingAllowances) return;
     if (!allowancesRowId && supabaseEnabled) {
       await saveAllowances();
       return;
@@ -408,6 +408,31 @@ function App() {
     } finally {
       setSavingAllowanceName(null);
     }
+  };
+
+  const [savingAllowanceAmount, setSavingAllowanceAmount] = useState<number | null>(null);
+  const [allowanceAmountErrors, setAllowanceAmountErrors] = useState<Record<number, string>>({});
+  const saveAllowanceAmount = async (person: number) => {
+    if (!allowancesLoaded || savingAllowanceAmount !== null || savingAllowanceName !== null || isSavingAllowances) return;
+    const value = person === 1 ? allowance1 : allowance2;
+    const amount = Number(value);
+    if (value.trim() === '' || !Number.isFinite(amount) || amount < 0 || amount > 9999999999.99) return;
+    if (!allowancesRowId && supabaseEnabled) { await saveAllowances(); return; }
+    const savedAmount = String(Math.round(amount * 100) / 100);
+    setSavingAllowanceAmount(person);
+    setAllowanceAmountErrors(previous => ({ ...previous, [person]: '' }));
+    try {
+      if (supabaseEnabled) {
+        const { error } = await supabase.from('allowances').update({ [person === 1 ? 'allowance1' : 'allowance2']: Number(savedAmount) })
+          .eq('id', allowancesRowId).select('id').single();
+        if (error) throw error;
+      }
+      localStorage.setItem(`allowance${person}`, savedAmount);
+      (person === 1 ? setAllowance1 : setAllowance2)(savedAmount);
+      setAllowancesLastSaved(previous => ({ ...previous, [person === 1 ? 'allowance1' : 'allowance2']: savedAmount }));
+    } catch {
+      setAllowanceAmountErrors(previous => ({ ...previous, [person]: 'Amount could not be saved. Please try again.' }));
+    } finally { setSavingAllowanceAmount(null); }
   };
 
   // Auto-update income due dates when they're reached
@@ -1501,10 +1526,14 @@ function App() {
                         {weeklyAllowanceSchedule.length > 0 ? <div className="personal-allowance-grid">
                           {[1, 2].map(person => <PersonalAllowance key={`${person}-${toDateKey(weeklyAllowanceSchedule[0].start)}`} person={person}
                             onSaveName={() => void saveAllowanceName(person)} nameSaving={savingAllowanceName === person || isSavingAllowances}
-                            nameSaveDisabled={!allowancesLoaded || savingAllowanceName !== null || isSavingAllowances}
+                            nameSaveDisabled={!allowancesLoaded || savingAllowanceName !== null || savingAllowanceAmount !== null || isSavingAllowances}
                             nameDirty={person === 1 ? allowanceName1 !== allowancesLastSaved.allowanceName1 : allowanceName2 !== allowancesLastSaved.allowanceName2}
                             nameError={allowanceNameErrors[person] || ''}
                             name={person === 1 ? allowanceName1 : allowanceName2} onNameChange={person === 1 ? setAllowanceName1 : setAllowanceName2}
+                            onSaveAmount={() => void saveAllowanceAmount(person)} amountSaving={savingAllowanceAmount === person || isSavingAllowances}
+                            amountSaveDisabled={!allowancesLoaded || savingAllowanceAmount !== null || savingAllowanceName !== null || isSavingAllowances}
+                            amountDirty={person === 1 ? allowance1 !== allowancesLastSaved.allowance1 : allowance2 !== allowancesLastSaved.allowance2}
+                            amountError={allowanceAmountErrors[person] || ''}
                             allowance={person === 1 ? allowance1 : allowance2} onChange={person === 1 ? setAllowance1 : setAllowance2}
                             periodStart={toDateKey(weeklyAllowanceSchedule[0].start)} periodEnd={toDateKey(weeklyAllowanceSchedule[weeklyAllowanceSchedule.length - 1].end)}
                             cloudEnabled={supabaseEnabled} budgetSaved={allowancesLoaded && !allowancesDirty && !isSavingAllowances} />)}
@@ -1543,7 +1572,7 @@ function App() {
                         <button
                           className="btn-control"
                           onClick={saveAllowances}
-                          disabled={isSavingAllowances || savingAllowanceName !== null || !allowancesDirty}
+                          disabled={isSavingAllowances || savingAllowanceName !== null || savingAllowanceAmount !== null || !allowancesDirty}
                           title={supabaseEnabled ? 'Save allowances to Supabase' : 'Save allowances locally'}
                         >
                           {isSavingAllowances ? 'Saving…' : 'Save allowances'}

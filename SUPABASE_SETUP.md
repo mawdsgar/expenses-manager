@@ -223,3 +223,9 @@ are supported. The browser rejects future dates and dates outside the selected
 cycle. Corrections recalculate projections immediately after persistence succeeds.
 
 Calculation checks: `node --experimental-strip-types --test tests/householdTransfers.test.ts`.
+
+Each personal allowance card also provides Save amount beside the monthly
+amount section (Enter also saves). This persists only that person's amount
+and displays unsaved, saving, saved or error feedback on the card. Other
+unsaved names and amounts are left untouched. Saved amounts update the
+existing allowance totals; payment records remain separate and unchanged.

@@ -4273,3 +4273,5 @@ button {
 .household-week-status { margin: 10px 0 0; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
 .household-budget-warning { margin: 10px 0 0; border: 1px solid #d49b3e; border-radius: 6px; padding: 9px; background: color-mix(in srgb, #d49b3e 12%, var(--surface)); color: var(--ink); font-size: 12px; line-height: 1.5; }
 @media (max-width: 600px) { .household-transfer-tracker { padding: 10px; } .household-transfer-totals { gap: 8px; } .household-transfer-totals strong { font-size: 15px; } .household-week-figures { gap: 8px; } .household-week-figures strong { font-size: 13px; } }
+
+.allowance-amount-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 9px; }

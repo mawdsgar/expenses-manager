@@ -6,7 +6,8 @@ type Payment = { id: string; person: number; period_start: string; paid_on: stri
 const money = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value);
 const localKey = 'personalAllowancePayments';
 
-export function PersonalAllowance({ person, name, onNameChange, onSaveName, nameSaving, nameSaveDisabled, nameDirty, nameError, allowance, onChange, periodStart, periodEnd, cloudEnabled, budgetSaved }: {
+export function PersonalAllowance({ person, name, onNameChange, onSaveName, nameSaving, nameSaveDisabled, nameDirty, nameError, onSaveAmount, amountSaving, amountSaveDisabled, amountDirty, amountError, allowance, onChange, periodStart, periodEnd, cloudEnabled, budgetSaved }: {
+  onSaveAmount: () => void; amountSaving: boolean; amountSaveDisabled: boolean; amountDirty: boolean; amountError: string;
   onSaveName: () => void; nameSaving: boolean; nameSaveDisabled: boolean; nameDirty: boolean; nameError: string;
   person: number; name: string; onNameChange: (value: string) => void; allowance: string; onChange: (value: string) => void;
   periodStart: string; periodEnd: string; cloudEnabled: boolean; budgetSaved: boolean;
@@ -98,10 +99,16 @@ export function PersonalAllowance({ person, name, onNameChange, onSaveName, name
       <button type="submit" className="btn-control" disabled={nameSaveDisabled || !nameDirty}>{nameSaving ? 'Saving…' : 'Save name'}</button>
       <span className={nameError ? 'allowance-status-error' : 'allowance-status'} role="status">{nameError || (nameDirty ? 'Unsaved name' : 'Name saved')}</span>
     </form>
-    <div className="allowance-item">
-      <label htmlFor={`allowance-${person}`}>Monthly amount<small>Yours to spend as you wish</small></label>
-      <div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" step="0.01" placeholder="0.00" value={allowance} onChange={e => onChange(e.target.value)} /></div>
-    </div>
+    <form className="allowance-amount-form" onSubmit={e => { e.preventDefault(); if (amountDirty && !amountSaveDisabled) onSaveAmount(); }}>
+      <div className="allowance-item">
+        <label htmlFor={`allowance-${person}`}>Monthly amount<small>Yours to spend as you wish</small></label>
+        <div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" max="9999999999.99" step="0.01" required placeholder="0.00" value={allowance} onChange={e => onChange(e.target.value)} /></div>
+      </div>
+      <div className="allowance-amount-actions">
+        <button type="submit" className="btn-control" disabled={amountSaveDisabled || !amountDirty || allowance.trim() === '' || !Number.isFinite(Number(allowance)) || Number(allowance) < 0 || Number(allowance) > 9999999999.99}>{amountSaving ? 'Saving…' : 'Save amount'}</button>
+        <span className={amountError ? 'allowance-status-error' : 'allowance-status'} role="status">{amountError || (amountDirty ? 'Unsaved amount' : 'Amount saved')}</span>
+      </div>
+    </form>
     <div className="personal-payment-summary" aria-live="polite">
       <div><span>Paid out</span><strong>{loading ? 'Loading…' : error ? 'Unavailable' : money(paid / 100)}</strong></div>
       <div><span>{remaining < 0 ? 'Over allowance' : 'Still to pay'}</span><strong>{loading ? 'Loading…' : error ? 'Unavailable' : money(Math.abs(remaining) / 100)}</strong></div>
@@ -113,7 +120,7 @@ export function PersonalAllowance({ person, name, onNameChange, onSaveName, name
       <label>Payment date<input type="date" required max={toDateKey(new Date())} value={paidOn} onChange={e => setPaidOn(e.target.value)} /></label>
       <button className="btn-control" disabled={busy || loading || !!error || !budgetSaved || !validAmount || !paidOn || paidOn > toDateKey(new Date())}>{busy ? 'Saving…' : 'Record payment'}</button>
     </form>
-    {!budgetSaved && <p className="allowance-hint">Save allowances below before recording a payment.</p>}
+    {!budgetSaved && <p className="allowance-hint">Save any edited name or monthly amount before recording a payment. Other unsaved allowance changes can be saved with Save allowances below.</p>}
     {Number(amount) * 100 > remaining && <p className="allowance-status-error">Amount exceeds the allowance still to pay.</p>}
     {error && <p role="alert" className="allowance-status-error">{error} <button type="button" className="btn-control" onClick={() => setReload(n => n + 1)}>Retry</button></p>}
     <details className="personal-payment-history"><summary>Payment history ({payments.length})</summary>
