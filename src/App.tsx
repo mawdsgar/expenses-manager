@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useRef, type RefObject } from 'react';
 import type { Expense, Income, SavingsAccount } from './types/expense';
 import { getExpensePaidAmount, getExpenseRemainingAmount, normaliseExpense } from './types/expense';
 import { supabase } from './lib/supabase';
+import { PersonalAllowance } from './components/PersonalAllowance';
 import { AddExpenseModal } from './components/AddExpenseModal';
 import { AddIncomeModal } from './components/AddIncomeModal';
 import { AddSavingsModal } from './components/AddSavingsModal';
@@ -1439,22 +1440,33 @@ function App() {
                   </div>
                   {allowancesExpanded && (
                     <div className="expense-section-content">
-                      <div className="allowance-item">
-                        <label>Personal Allowance 1</label>
-                        <div className="currency-input">
-                          <span className="currency-symbol">£</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="0.00"
-                            value={allowance1}
-                            onChange={(e) => setAllowance1(e.target.value)}
-                          />
+                      <div className="allowance-pay-month">
+                        <strong>Pay month</strong>
+                        <div className="weekly-allowance-period" role="group" aria-label="Allowances pay month">
+                          <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'current'} onClick={() => setAllowancePeriodView('current')}>Current pay month</button>
+                          <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'following'} onClick={() => setAllowancePeriodView('following')}>Following pay month</button>
                         </div>
+                        {weeklyAllowanceSchedule.length > 0 && <span>{formatPayDate(weeklyAllowanceSchedule[0].start)} – {formatPayDate(weeklyAllowanceSchedule[weeklyAllowanceSchedule.length - 1].end)}</span>}
                       </div>
+                      <section className="allowance-group personal-allowances-group">
+                        <h3>Personal money</h3>
+                        <p className="allowance-hint">A monthly allowance for each person to spend however they wish. Pay it all at once or in smaller amounts throughout the pay month.</p>
+                        {weeklyAllowanceSchedule.length > 0 ? <div className="personal-allowance-grid">
+                          {[1, 2].map(person => <PersonalAllowance key={`${person}-${toDateKey(weeklyAllowanceSchedule[0].start)}`} person={person}
+                            allowance={person === 1 ? allowance1 : allowance2} onChange={person === 1 ? setAllowance1 : setAllowance2}
+                            periodStart={toDateKey(weeklyAllowanceSchedule[0].start)} periodEnd={toDateKey(weeklyAllowanceSchedule[weeklyAllowanceSchedule.length - 1].end)}
+                            cloudEnabled={supabaseEnabled} budgetSaved={allowancesLoaded && !allowancesDirty && !isSavingAllowances} />)}
+                        </div> : <>
+                          <p className="allowance-hint">Set a primary monthly income to track payments by pay month.</p>
+                          {[1, 2].map(person => <div className="allowance-item" key={person}><label htmlFor={`allowance-${person}`}>Personal Allowance {person} · monthly amount</label><div className="currency-input"><span className="currency-symbol">£</span><input id={`allowance-${person}`} type="number" min="0" step="0.01" value={person === 1 ? allowance1 : allowance2} onChange={e => (person === 1 ? setAllowance1 : setAllowance2)(e.target.value)} /></div></div>)}
+                        </>}
+                        <p className="allowance-hint">Paid out records money handed over, not personal spending. Recording it does not add another expense.</p>
+                      </section>
+                      <section className="allowance-group household-allowances-group">
+                        <h3>Household spending</h3>
+                        <p className="allowance-hint">Food, Kids, Eating Out and Fuel only. This budget and its weekly transfers are separate from both personal allowances.</p>
                       <div className="allowance-item">
-                        <label>Personal Allowance 2</label>
+                        <label htmlFor="household-allowance">Food, Kids, Eating Out and Fuel<small>Monthly household budget</small></label>
                         <div className="currency-input">
                           <span className="currency-symbol">£</span>
                           <input
@@ -1462,35 +1474,19 @@ function App() {
                             step="0.01"
                             min="0"
                             placeholder="0.00"
-                            value={allowance2}
-                            onChange={(e) => setAllowance2(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="allowance-item">
-                        <label>Food, Kids, Eating Out and Fuel</label>
-                        <div className="currency-input">
-                          <span className="currency-symbol">£</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="0.00"
+                            id="household-allowance"
                             value={foodKidsFuel}
                             onChange={(e) => setFoodKidsFuel(e.target.value)}
                           />
                         </div>
                       </div>
                       {weeklyAllowanceSchedule.length > 0 && (
-                        <div className="weekly-allowance-schedule" aria-label="Weekly allowance transfer schedule">
+                        <div className="weekly-allowance-schedule" aria-label="Weekly household transfer schedule">
                           <div className="weekly-allowance-heading">
-                            <strong>Weekly spending transfers</strong>
+                            <strong>Weekly household spending transfers</strong>
                             <span>Payday to payday</span>
                           </div>
-                          <div className="weekly-allowance-period" role="group" aria-label="Weekly spending pay month">
-                            <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'current'} onClick={() => setAllowancePeriodView('current')}>Current pay month</button>
-                            <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'following'} onClick={() => setAllowancePeriodView('following')}>Following pay month</button>
-                          </div>
+                          <p className="allowance-hint">For Food, Kids, Eating Out and Fuel only · excludes personal money</p>
                           {weeklyAllowanceSchedule.map(({ week, start, end, amount }) => (
                             <div className="weekly-allowance-row" key={week}>
                               <span>Week {week} <small>{formatPayDate(start)} – {formatPayDate(end)}</small></span>
@@ -1499,6 +1495,8 @@ function App() {
                           ))}
                         </div>
                       )}
+
+                      </section>
 
                       <div className="allowance-actions">
                         <button

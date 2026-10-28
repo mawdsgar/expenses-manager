@@ -180,3 +180,16 @@ from the planning spreadsheet.
 Until those tables exist, the planner deliberately falls back to local browser
 storage so the page remains usable. Once installed, both household users see
 the same plan.
+
+## Personal allowance payments
+
+Apply `supabase/migrations/20261028090120_personal_allowance_payments.sql`
+for the per-person payment ledger. It uses the existing single-household public
+access model, with RLS enabled and explicit select, insert and delete policies.
+Each record contains the person (1 or 2), pay-month start date, actual payment
+date and positive amount. Payment totals are separate from monthly entitlements
+and household transfers; recording a payment does not create an expense.
+Current/following pay-month selection scopes both personal payment histories
+and household transfer schedules. Payments can be removed after confirmation
+to correct an entry. The app uses local storage only when cloud mode is disabled;
+cloud errors are shown and are never reported as a successful local save.
