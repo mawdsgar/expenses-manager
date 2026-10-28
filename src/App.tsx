@@ -120,6 +120,10 @@ function App() {
   }, [sidebarCollapsed]);
 
   const toggleDashboardCollapsed = (sectionRef?: RefObject<HTMLElement | null>) => {
+    if (dashboardCollapsed) {
+      setAllowancesExpanded(true);
+      setExpensesBreakdownExpanded(true);
+    }
     if (dashboardCollapsed && sectionRef?.current) {
       setDashboardScrollTarget(sectionRef.current);
     }
