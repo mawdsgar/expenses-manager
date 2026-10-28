@@ -2,6 +2,8 @@ import { Fragment, useState, useEffect, useRef, type RefObject } from 'react';
 import type { Expense, Income, SavingsAccount } from './types/expense';
 import { getExpensePaidAmount, getExpenseRemainingAmount, normaliseExpense } from './types/expense';
 import { supabase } from './lib/supabase';
+import { useAllowancePayments } from './hooks/useAllowancePayments';
+import { allowanceRemaining } from './utils/allowanceRemaining';
 import { HouseholdTransfers } from './components/HouseholdTransfers';
 import { PersonalAllowance } from './components/PersonalAllowance';
 import { AddExpenseModal } from './components/AddExpenseModal';
@@ -70,6 +72,7 @@ function App() {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showSavingsModal, setShowSavingsModal] = useState(false);
   const [showNewCycleConfirm, setShowNewCycleConfirm] = useState(false);
+  const [allowancePaymentsRevision, setAllowancePaymentsRevision] = useState(0);
   const [allowancePeriodView, setAllowancePeriodView] = useState<'current' | 'following'>('current');
   const [expensePeriodView, setExpensePeriodView] = useState<'current' | 'following' | 'all'>('current');
   const [showDeleteExpenseConfirm, setShowDeleteExpenseConfirm] = useState(false);
@@ -1033,7 +1036,12 @@ function App() {
     })
     .reduce((sum, expense) => sum + getExpenseRemainingAmount(expense), 0);
 
-  const leftToGoOut = unpaidExpensesDueBeforePayday;
+  const allowancePayments = useAllowancePayments(payPeriod ? toDateKey(payPeriod.start) : '', payPeriod ? toDateKey(payPeriod.end) : '', supabaseEnabled, allowancePaymentsRevision);
+  const remainingPersonal1 = payPeriod ? allowanceRemaining(Number(allowancesLastSaved.allowance1) || 0, allowancePayments.personal1) : 0;
+  const remainingPersonal2 = payPeriod ? allowanceRemaining(Number(allowancesLastSaved.allowance2) || 0, allowancePayments.personal2) : 0;
+  const remainingHousehold = payPeriod ? allowanceRemaining(Number(allowancesLastSaved.foodKidsFuel) || 0, allowancePayments.household) : 0;
+  const leftToGoOut = unpaidExpensesDueBeforePayday + remainingPersonal1 + remainingPersonal2 + remainingHousehold;
+  const cashflowLoading = !allowancesLoaded || allowancePayments.loading;
 
   // Calculate expenses breakdown by account
   const expensesByAccount = expensesInPayPeriod.reduce((acc, expense) => {
@@ -1313,7 +1321,14 @@ function App() {
             <div className="metric-icon"><CalendarDays size={19} /></div>
             <div>
               <span>Left to go out</span>
-              <strong>{formatCurrency(leftToGoOut)}</strong>
+              <strong>{cashflowLoading ? 'Loading…' : allowancePayments.error ? 'Unavailable' : formatCurrency(leftToGoOut)}</strong>
+              {allowancePayments.error ? <small role="alert">{allowancePayments.error} <button className="btn-control" onClick={() => setAllowancePaymentsRevision(value => value + 1)}>Retry</button></small> : !cashflowLoading && <details className="cashflow-breakdown"><summary>Includes bills and allowances</summary>
+                <div><span>Outstanding expenses</span><b>{formatCurrency(unpaidExpensesDueBeforePayday)}</b></div>
+                <div><span>{allowancesLastSaved.allowanceName1}</span><b>{formatCurrency(remainingPersonal1)}</b></div>
+                <div><span>{allowancesLastSaved.allowanceName2}</span><b>{formatCurrency(remainingPersonal2)}</b></div>
+                <div><span>Household transfers still to send</span><b>{formatCurrency(remainingHousehold)}</b></div>
+                <small>Current pay month · saved allowance amounts{!payPeriod ? ' · set a primary monthly income to include allowances' : ''}</small>
+              </details>}
               <small>{daysUntilPayday !== null
                 ? <b className="payday-countdown">Payday in {daysUntilPayday} day{daysUntilPayday !== 1 ? 's' : ''}</b>
                 : 'Payday not set'}</small>
@@ -1524,7 +1539,7 @@ function App() {
                         <h3>Personal money</h3>
                         <p className="allowance-hint">A monthly allowance for each person to spend however they wish. Pay it all at once or in smaller amounts throughout the pay month.</p>
                         {weeklyAllowanceSchedule.length > 0 ? <div className="personal-allowance-grid">
-                          {[1, 2].map(person => <PersonalAllowance key={`${person}-${toDateKey(weeklyAllowanceSchedule[0].start)}`} person={person}
+                          {[1, 2].map(person => <PersonalAllowance onPaymentsChange={() => setAllowancePaymentsRevision(value => value + 1)} key={`${person}-${toDateKey(weeklyAllowanceSchedule[0].start)}`} person={person}
                             onSaveName={() => void saveAllowanceName(person)} nameSaving={savingAllowanceName === person || isSavingAllowances}
                             nameSaveDisabled={!allowancesLoaded || savingAllowanceName !== null || savingAllowanceAmount !== null || isSavingAllowances}
                             nameDirty={person === 1 ? allowanceName1 !== allowancesLastSaved.allowanceName1 : allowanceName2 !== allowancesLastSaved.allowanceName2}
@@ -1562,7 +1577,7 @@ function App() {
                         </div>
                       </div>
                       {weeklyAllowanceSchedule.length > 0 && (
-                        <HouseholdTransfers key={toDateKey(weeklyAllowanceSchedule[0].start)} weeks={weeklyAllowanceSchedule}
+                        <HouseholdTransfers onPaymentsChange={() => setAllowancePaymentsRevision(value => value + 1)} key={toDateKey(weeklyAllowanceSchedule[0].start)} weeks={weeklyAllowanceSchedule}
                           cloudEnabled={supabaseEnabled} budgetSaved={allowancesLoaded && !allowancesDirty && !isSavingAllowances} />
                       )}
 

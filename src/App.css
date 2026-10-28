@@ -4275,3 +4275,9 @@ button {
 @media (max-width: 600px) { .household-transfer-tracker { padding: 10px; } .household-transfer-totals { gap: 8px; } .household-transfer-totals strong { font-size: 15px; } .household-week-figures { gap: 8px; } .household-week-figures strong { font-size: 13px; } }
 
 .allowance-amount-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 9px; }
+
+.cashflow-breakdown { margin-top: 8px; color: var(--text-secondary); font-size: 11px; }
+.cashflow-breakdown summary { cursor: pointer; line-height: 1.5; }
+.cashflow-breakdown > div { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; }
+.cashflow-breakdown b { white-space: nowrap; font-size: 11px; }
+.cashflow-breakdown > small { display: block; margin-top: 8px; line-height: 1.5; }

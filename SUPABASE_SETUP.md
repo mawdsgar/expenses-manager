@@ -229,3 +229,13 @@ amount section (Enter also saves). This persists only that person's amount
 and displays unsaved, saving, saved or error feedback on the card. Other
 unsaved names and amounts are left untouched. Saved amounts update the
 existing allowance totals; payment records remain separate and unchanged.
+
+Left to go out includes outstanding expenses before primary payday plus each
+saved personal allowance's remaining balance and the current pay month's
+household budget less recorded transfers. Each allowance remainder is clamped
+to zero independently so an overpayment cannot reduce other obligations. The
+summary loads payment data even when allowance cards are collapsed and refreshes
+after payment or transfer recording, edits and removal. Current/following view
+selection does not change this current-cycle cashflow total. An expandable
+breakdown shows each component; payment-load failure shows Unavailable with Retry
+rather than presenting an incomplete figure.

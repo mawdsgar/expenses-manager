@@ -6,11 +6,11 @@ type Payment = { id: string; person: number; period_start: string; paid_on: stri
 const money = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value);
 const localKey = 'personalAllowancePayments';
 
-export function PersonalAllowance({ person, name, onNameChange, onSaveName, nameSaving, nameSaveDisabled, nameDirty, nameError, onSaveAmount, amountSaving, amountSaveDisabled, amountDirty, amountError, allowance, onChange, periodStart, periodEnd, cloudEnabled, budgetSaved }: {
+export function PersonalAllowance({ person, name, onNameChange, onSaveName, nameSaving, nameSaveDisabled, nameDirty, nameError, onSaveAmount, amountSaving, amountSaveDisabled, amountDirty, amountError, allowance, onChange, periodStart, periodEnd, cloudEnabled, budgetSaved, onPaymentsChange }: {
   onSaveAmount: () => void; amountSaving: boolean; amountSaveDisabled: boolean; amountDirty: boolean; amountError: string;
   onSaveName: () => void; nameSaving: boolean; nameSaveDisabled: boolean; nameDirty: boolean; nameError: string;
   person: number; name: string; onNameChange: (value: string) => void; allowance: string; onChange: (value: string) => void;
-  periodStart: string; periodEnd: string; cloudEnabled: boolean; budgetSaved: boolean;
+  periodStart: string; periodEnd: string; cloudEnabled: boolean; budgetSaved: boolean; onPaymentsChange: () => void;
 }) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +68,7 @@ export function PersonalAllowance({ person, name, onNameChange, onSaveName, name
       }
       setPayments(previous => [payment, ...previous]);
       setAmount('');
+      onPaymentsChange();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Payment could not be saved. Please retry.');
     } finally { setBusy(false); inFlight.current = false; }
@@ -87,6 +88,7 @@ export function PersonalAllowance({ person, name, onNameChange, onSaveName, name
       }
       setPayments(previous => previous.filter(p => p.id !== id));
       setRemoveId(null);
+      onPaymentsChange();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Payment could not be removed. Please retry.');
     } finally { setBusy(false); inFlight.current = false; }

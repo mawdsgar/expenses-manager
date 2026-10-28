@@ -7,8 +7,8 @@ const money = (pennies: number) => new Intl.NumberFormat('en-GB', { style: 'curr
 const storageKey = 'householdSpendingTransfers';
 const errorMessage = (error: unknown) => error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Please try again.';
 
-export function HouseholdTransfers({ weeks, cloudEnabled, budgetSaved }: {
-  weeks: HouseholdWeek[]; cloudEnabled: boolean; budgetSaved: boolean;
+export function HouseholdTransfers({ weeks, cloudEnabled, budgetSaved, onPaymentsChange }: {
+  weeks: HouseholdWeek[]; cloudEnabled: boolean; budgetSaved: boolean; onPaymentsChange: () => void;
 }) {
   const start = toDateKey(weeks[0].start);
   const end = toDateKey(weeks[weeks.length - 1].end);
@@ -76,6 +76,7 @@ export function HouseholdTransfers({ weeks, cloudEnabled, budgetSaved }: {
         localStorage.setItem(storageKey, JSON.stringify([...existing.filter(t => t.id !== transfer.id), transfer]));
       }
       setTransfers(previous => [...previous.filter(t => t.id !== transfer.id), transfer]);
+      onPaymentsChange();
       setNotice(editingId ? 'Transfer updated. Weekly allowances recalculated.' : 'Transfer recorded. Weekly allowances recalculated.');
       setEditingId(null); setAmount('');
     } catch (error) { setSaveError(`Transfer could not be saved. ${errorMessage(error)}`); }
@@ -95,6 +96,7 @@ export function HouseholdTransfers({ weeks, cloudEnabled, budgetSaved }: {
       }
       setTransfers(previous => previous.filter(t => t.id !== id));
       if (editingId === id) { setEditingId(null); setAmount(''); }
+      onPaymentsChange();
       setRemoveId(null); setNotice('Transfer removed. Weekly allowances recalculated.');
     } catch (error) { setSaveError(`Transfer could not be removed. ${errorMessage(error)}`); }
     finally { setBusy(false); inFlight.current = false; }
