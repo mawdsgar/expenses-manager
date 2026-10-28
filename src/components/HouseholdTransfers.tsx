@@ -132,7 +132,7 @@ export function HouseholdTransfers({ weeks, cloudEnabled, budgetSaved, onPayment
         </div>
         {!unavailable && (row.over > 0
           ? <p role="alert" className="household-budget-warning">Week {row.week} is {money(row.over)} over its allowance. {row.week < rows.length ? 'This reduces later weeks’ adjusted allowances, shown below.' : 'No future weeks remain in this pay month to absorb the excess.'}</p>
-          : <p className="household-week-status">{row.closed ? (row.remaining ? (row.week < rows.length ? `${money(row.remaining)} unused · carried into later weeks.` : `${money(row.remaining)} unused at the end of this pay month.`) : 'Within allowance.') : row.current ? `On track · ${money(row.remaining)} available for the rest of this week.` : row.target === row.original ? 'Original allowance unchanged.' : `${money(Math.abs(row.target - row.original))} ${row.target < row.original ? 'less' : 'extra'} than the original allowance.`}</p>)}
+          : <p className={`household-week-status${row.current || row.closed ? ' household-week-on-track' : ''}`}>{row.closed ? (row.remaining ? (row.week < rows.length ? `${money(row.remaining)} unused · carried into later weeks.` : `${money(row.remaining)} unused at the end of this pay month.`) : 'Within allowance.') : row.current ? `On track · ${money(row.remaining)} available for the rest of this week.` : row.target === row.original ? 'Original allowance unchanged.' : `${money(Math.abs(row.target - row.original))} ${row.target < row.original ? 'less' : 'extra'} than the original allowance.`}</p>)}
       </section>)}
     </div>
     <details className="personal-payment-history household-transfer-history"><summary>Household transfer history ({unavailable ? '…' : transfers.length})</summary>
