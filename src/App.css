@@ -4328,3 +4328,13 @@ button {
   color: #ff7777;
   font-weight: 700;
 }
+
+/* Desktop pairs income with expenditure; mobile retains the existing reading order. */
+@media (min-width: 761px) {
+  #root .dashboard-grid { align-items: start; }
+  #root .dashboard-column { display: contents; }
+  #root .dashboard-column .income-card { grid-column: 1 / 8; grid-row: 1; }
+  #root .dashboard-column .expenses-card { grid-column: 8 / 13; grid-row: 1; }
+  #root .dashboard-column .category-card { grid-column: 1 / 8; grid-row: 2; }
+  #root .dashboard-column .savings-card { grid-column: 8 / 13; grid-row: 2; }
+}
