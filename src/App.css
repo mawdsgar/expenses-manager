@@ -4254,3 +4254,22 @@ button {
 .allowance-name-form .allowance-name-field { flex: 1 1 150px; margin-bottom: 0; }
 .allowance-name-form .btn-control { min-height: 37px; }
 .allowance-name-form [role="status"] { flex-basis: 100%; font-size: 11px; }
+
+.household-transfer-tracker { padding: 14px; }
+.household-transfer-totals, .household-week-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.household-transfer-totals { padding: 12px 0 16px; }
+.household-transfer-totals div, .household-week-figures div { display: grid; align-content: start; gap: 5px; min-width: 0; }
+.household-transfer-totals span, .household-week-figures span { color: var(--text-secondary); font-size: 11px; }
+.household-transfer-totals strong { color: var(--ink); font-size: 18px; overflow-wrap: anywhere; }
+.household-transfer-form { padding-bottom: 5px; }
+.household-week { margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.household-week-current { border-color: #2dd4bf; }
+.household-week .weekly-allowance-row { border-top: 0; padding-bottom: 10px; align-items: start; }
+.household-week .weekly-allowance-row small { display: block; margin: 5px 0 0; }
+.household-week-tag { display: inline-block; margin-left: 7px; color: var(--green-dark); font-size: 10px; font-style: normal; }
+.household-original { text-align: right; color: var(--text-muted); white-space: nowrap; font-size: 10px; }
+.household-original strong { display: block; margin-top: 4px; font-size: 13px; }
+.household-week-figures strong { color: var(--ink); font-size: 15px; overflow-wrap: anywhere; }
+.household-week-status { margin: 10px 0 0; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+.household-budget-warning { margin: 10px 0 0; border: 1px solid #d49b3e; border-radius: 6px; padding: 9px; background: color-mix(in srgb, #d49b3e 12%, var(--surface)); color: var(--ink); font-size: 12px; line-height: 1.5; }
+@media (max-width: 600px) { .household-transfer-tracker { padding: 10px; } .household-transfer-totals { gap: 8px; } .household-transfer-totals strong { font-size: 15px; } .household-week-figures { gap: 8px; } .household-week-figures strong { font-size: 13px; } }

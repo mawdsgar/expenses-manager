@@ -201,3 +201,25 @@ can be saved individually using Save name beside each field (or Enter), or toget
 with Save allowances. Each name shows its save status. Names are trimmed, limited to 60 characters, and default
 to Personal Allowance 1/2 if blank. Payment records continue to use the stable
 person identifier, so renaming does not move or reset payment history.
+
+## Household spending transfers
+
+Apply `supabase/migrations/20261028093728_household_transfers.sql`. The table
+stores a stable UUID, actual transfer date and positive amount. It follows the
+existing single-household access model with RLS enabled and explicit read,
+insert, update and delete policies. Dates scope records into the selected pay
+month and week; transfers never become expenses or personal allowance payments.
+
+The original weekly schedule stays visible. Adjusted weekly amounts use integer
+pennies and distribute remaining budget by each remaining week's day count, with
+rounding reconciled in the final week. Over-budget transfers reduce future weeks
+immediately. Underspending carries forward after the week closes; the current
+week's unused budget stays available until then. Projections assume all actual
+transfers have been recorded. A monthly excess shows a warning and future
+allowances stop at zero. Unused money at the end of the cycle is displayed but
+is not automatically added to a different pay month's budget. Multiple dated
+transfers, edit, confirmed removal, cloud error feedback and local-only fallback
+are supported. The browser rejects future dates and dates outside the selected
+cycle. Corrections recalculate projections immediately after persistence succeeds.
+
+Calculation checks: `node --experimental-strip-types --test tests/householdTransfers.test.ts`.

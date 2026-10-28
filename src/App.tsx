@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useRef, type RefObject } from 'react';
 import type { Expense, Income, SavingsAccount } from './types/expense';
 import { getExpensePaidAmount, getExpenseRemainingAmount, normaliseExpense } from './types/expense';
 import { supabase } from './lib/supabase';
+import { HouseholdTransfers } from './components/HouseholdTransfers';
 import { PersonalAllowance } from './components/PersonalAllowance';
 import { AddExpenseModal } from './components/AddExpenseModal';
 import { AddIncomeModal } from './components/AddIncomeModal';
@@ -1532,19 +1533,8 @@ function App() {
                         </div>
                       </div>
                       {weeklyAllowanceSchedule.length > 0 && (
-                        <div className="weekly-allowance-schedule" aria-label="Weekly household transfer schedule">
-                          <div className="weekly-allowance-heading">
-                            <strong>Weekly household spending transfers</strong>
-                            <span>Payday to payday</span>
-                          </div>
-                          <p className="allowance-hint">For Food, Kids, Eating Out and Fuel only · excludes personal money</p>
-                          {weeklyAllowanceSchedule.map(({ week, start, end, amount }) => (
-                            <div className="weekly-allowance-row" key={week}>
-                              <span>Week {week} <small>{formatPayDate(start)} – {formatPayDate(end)}</small></span>
-      <strong>{formatCurrency(amount)}</strong>
-                            </div>
-                          ))}
-                        </div>
+                        <HouseholdTransfers key={toDateKey(weeklyAllowanceSchedule[0].start)} weeks={weeklyAllowanceSchedule}
+                          cloudEnabled={supabaseEnabled} budgetSaved={allowancesLoaded && !allowancesDirty && !isSavingAllowances} />
                       )}
 
                       </section>
