@@ -4338,3 +4338,10 @@ button {
   #root .dashboard-column .category-card { grid-column: 1 / 8; grid-row: 2; }
   #root .dashboard-column .savings-card { grid-column: 8 / 13; grid-row: 2; }
 }
+
+@media (min-width: 761px) {
+  #root .dashboard-column .category-card,
+  #root .dashboard-column .savings-card {
+    align-self: stretch;
+  }
+}
