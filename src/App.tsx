@@ -1327,7 +1327,7 @@ function App() {
                 <div><span>{allowancesLastSaved.allowanceName1}</span><b>{formatCurrency(remainingPersonal1)}</b></div>
                 <div><span>{allowancesLastSaved.allowanceName2}</span><b>{formatCurrency(remainingPersonal2)}</b></div>
                 <div><span>Household transfers still to send</span><b>{formatCurrency(remainingHousehold)}</b></div>
-                <small>Current pay month · saved allowance amounts{!payPeriod ? ' · set a primary monthly income to include allowances' : ''}</small>
+                <small>Current pay month{!payPeriod ? ' · set a primary monthly income to include allowances' : ''}</small>
               </details>}
               <small>{daysUntilPayday !== null
                 ? <b className="payday-countdown">Payday in {daysUntilPayday} day{daysUntilPayday !== 1 ? 's' : ''}</b>
