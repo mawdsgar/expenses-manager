@@ -1973,9 +1973,8 @@ function App() {
                 </fieldset>
                 <div className="date-range">
                   <span className="date-range-label"><CalendarDays size={15} /> Date range</span>
-                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-                  <span style={{ color: 'var(--text-muted)' }}>to</span>
-                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                  <label className="date-range-field">From<input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /></label>
+                  <label className="date-range-field">To<input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} /></label>
                   <button
                     className="btn-control btn-clear-date-range"
                     onClick={() => { setFromDate(''); setToDate(''); }}

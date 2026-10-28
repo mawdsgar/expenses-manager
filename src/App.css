@@ -4281,3 +4281,33 @@ button {
 .cashflow-breakdown > div { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; }
 .cashflow-breakdown b { white-space: nowrap; font-size: 11px; }
 .cashflow-breakdown > small { display: block; margin-top: 8px; line-height: 1.5; }
+
+.date-range-field { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 11px; min-width: 0; }
+@media (max-width: 760px) {
+  #root .expense-period-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1 1 100%; width: 100%; min-width: 0; white-space: normal; }
+  #root .expense-period-controls .btn-control { min-width: 0; min-height: 44px; white-space: normal; padding: 8px; }
+  #root .expense-period-controls .btn-control:last-child { grid-column: 1 / -1; }
+  #root .table-controls { min-width: 0; }
+  #root .table-controls > .btn-control { min-height: 44px; min-width: 0; white-space: normal; }
+  #root .payment-filters { flex: 1 1 100%; width: 100%; min-width: 0; box-sizing: border-box; flex-wrap: wrap; }
+  #root .payment-filters label { min-height: 36px; }
+  #root .date-range { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; min-width: 0; margin-left: 0; }
+  #root .date-range-field { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; font-size: 12px; }
+  #root .date-range input { min-width: 0; width: 100%; max-width: none; min-height: 44px; font-size: 16px; box-sizing: border-box; }
+  #root .date-range .btn-clear-date-range { min-height: 44px; }
+}
+
+@media (max-width: 760px) {
+  #root .expense-section .section-header { flex-wrap: wrap; gap: 10px; padding: 14px; }
+  #root .expense-section .section-title { flex: 1 1 100%; min-width: 0; }
+  #root .expense-section .section-actions { width: 100%; min-width: 0; justify-content: flex-end; }
+  #root .expense-section .section-actions .btn-add { flex: 1; min-width: 0; min-height: 44px; }
+  #root .expense-section .section-actions .btn-collapse { flex: 0 0 44px; height: 44px; }
+  #root .expense-amount-cell { flex-wrap: wrap; align-items: flex-start; gap: 7px; }
+  #root .expense-amount-remaining { white-space: normal; overflow-wrap: anywhere; }
+  #root .expense-mobile-actions { flex-wrap: wrap; }
+  #root .expense-mobile-actions .btn-edit, #root .expense-mobile-actions .btn-delete { min-width: 36px; min-height: 36px; }
+}
+
+#root .table-controls { flex-wrap: wrap; }
+#root .date-range { flex-wrap: wrap; min-width: 0; }
