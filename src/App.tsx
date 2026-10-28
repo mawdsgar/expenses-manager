@@ -1280,14 +1280,9 @@ function App() {
           <div className="header-content">
             <div>
               <h1 className="brand-title">The Mawdsley's Income &amp; Expenditure</h1>
-              <p className="header-period">
-                <CalendarDays size={15} />
-                {new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(new Date())}
-              </p>
+
             </div>
-            <div className="header-actions">
-              <div className="header-avatar">GM</div>
-            </div>
+
           </div>
         </header>}
 
@@ -2141,7 +2136,7 @@ function App() {
               )}
               <div className="displayed-expenses-total" aria-live="polite">
                 <span className="displayed-expenses-total-badge">
-                {paymentFilters.includes('Paid') ? 'Total' : 'Left to pay'}: {formatCurrency(periodFilteredExpenses.reduce((total, expense) => total + (paymentFilters.includes('Paid') ? expense.amount : getExpenseRemainingAmount(expense)), 0))}
+                {paymentFilters.includes('Paid') ? 'Total (excl. allowances)' : 'Left to pay (excl. allowances)'}: {formatCurrency(periodFilteredExpenses.reduce((total, expense) => total + (paymentFilters.includes('Paid') ? expense.amount : getExpenseRemainingAmount(expense)), 0))}
                 </span>
               </div>
             </div>
