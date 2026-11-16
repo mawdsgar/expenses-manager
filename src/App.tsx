@@ -235,6 +235,7 @@ function App() {
         payee: row.payee,
         amount: Number(row.amount),
         paidAmount: row.paid_amount == null ? undefined : Number(row.paid_amount),
+        payments: row.payments ?? [],
         dueDate: row.due_date,
         frequency: row.frequency,
         intervalCount: row.interval_count == null ? undefined : Number(row.interval_count),
@@ -499,6 +500,7 @@ function App() {
             payee: expense.payee,
             amount: expense.amount,
             paid_amount: expense.paidAmount,
+            payments: expense.payments ?? [],
             due_date: expense.dueDate,
             frequency: expense.frequency,
             interval_count: expense.frequency === 'Custom' ? expense.intervalCount : null,
@@ -510,14 +512,14 @@ function App() {
           .select()
           .single();
         if (error) {
-          console.error('Failed to add expense to Supabase:', error.message);
-          return;
+          throw error;
         }
         const newExpense: Expense = normaliseExpense({
           id: data.id,
           payee: data.payee,
           amount: Number(data.amount),
           paidAmount: data.paid_amount == null ? expense.paidAmount : Number(data.paid_amount),
+          payments: data.payments ?? [],
           dueDate: data.due_date,
           frequency: data.frequency,
           intervalCount: data.interval_count == null ? expense.intervalCount : Number(data.interval_count),
@@ -532,7 +534,7 @@ function App() {
         setExpenses([...expenses, newExpense]);
       }
     };
-    insert();
+    return insert();
   };
 
   const editExpense = (expense: Expense) => {
@@ -546,6 +548,7 @@ function App() {
           payee: expense.payee,
           amount: updatedExpense.amount,
           paid_amount: updatedExpense.paidAmount,
+          payments: updatedExpense.payments ?? [],
           due_date: updatedExpense.dueDate,
           frequency: updatedExpense.frequency,
           interval_count: updatedExpense.frequency === 'Custom' ? updatedExpense.intervalCount : null,
@@ -555,10 +558,10 @@ function App() {
           account: updatedExpense.account,
         })
         .eq('id', expense.id);
-      if (error) console.error('Failed to update expense in Supabase:', error.message);
+      if (error) throw error;
       updateLocal();
     };
-    updateRemote();
+    return updateRemote();
   };
 
   const requestDeleteExpense = (id: string) => {
@@ -764,7 +767,7 @@ function App() {
     
     const updated = expenses.map((e) =>
       e.id === id
-        ? { ...e, paid: !e.paid, paidAmount: e.paid ? 0 : e.amount }
+        ? { ...e, paid: !e.paid, paidAmount: e.paid ? 0 : e.amount, payments: e.paid ? [] : e.payments }
         : e
     );
     setExpenses(updated);
@@ -772,7 +775,7 @@ function App() {
     if (supabaseEnabled) {
       const { error } = await supabase
         .from('expenses')
-        .update({ paid: !expense.paid, paid_amount: expense.paid ? 0 : expense.amount })
+        .update({ paid: !expense.paid, paid_amount: expense.paid ? 0 : expense.amount, payments: expense.paid ? [] : expense.payments ?? [] })
         .eq('id', id);
       if (error) console.error('Failed to toggle paid in Supabase:', error.message);
     }
@@ -808,12 +811,12 @@ function App() {
   };
 
   const markAllUnpaid = async () => {
-    const updated = expenses.map(expense => ({ ...expense, paid: false, paidAmount: 0 }));
+    const updated = expenses.map(expense => ({ ...expense, paid: false, paidAmount: 0, payments: [] }));
     setExpenses(updated);
     if (supabaseEnabled) {
       const { error } = await supabase
         .from('expenses')
-        .update({ paid: false, paid_amount: 0 })
+        .update({ paid: false, paid_amount: 0, payments: [] })
         .in('id', expenses.map(e => e.id));
       if (error) console.error('Failed to mark all unpaid in Supabase:', error.message);
     }
@@ -850,6 +853,7 @@ function App() {
             .update({
               paid: expense.paid,
               paid_amount: expense.paidAmount,
+              payments: expense.payments ?? [],
               due_date: expense.dueDate,
             })
             .eq('id', expense.id);
@@ -879,7 +883,7 @@ function App() {
     // Only paid expenses complete their current schedule and move forward.
     const updatedExpenses = expenses.map(expense => {
       if (!expense.paid) return expense;
-      if (expense.frequency === 'One-time') return { ...expense, paid: false, paidAmount: 0 };
+      if (expense.frequency === 'One-time') return { ...expense, paid: false, paidAmount: 0, payments: [] };
       const currentDueDate = new Date(`${expense.dueDate}T00:00:00`);
       let newDueDate = new Date(currentDueDate);
 
@@ -899,6 +903,7 @@ function App() {
         ...expense,
         paid: false,
         paidAmount: 0,
+        payments: [],
         dueDate: toDateKey(newDueDate)
       };
     });
@@ -915,6 +920,7 @@ function App() {
           .update({
             paid: false,
             paid_amount: 0,
+            payments: [],
             due_date: expense.dueDate,
           })
           .eq('id', expense.id);
@@ -2071,7 +2077,15 @@ function App() {
 
                           </div>
                         </td>
-                        <td data-label="Payee">{expense.payee}</td>
+                        <td data-label="Payee">{expense.payee}
+                          {!!expense.payments?.length && <details className="expense-payment-details">
+                            <summary>{expense.payments.length} payment{expense.payments.length === 1 ? '' : 's'} recorded</summary>
+                            <ul>{expense.payments.map(payment => <li key={payment.id}>
+                              <strong>{formatCurrency(payment.amount)}</strong> · {payment.date ? formatDate(payment.date) : 'Date not recorded'}
+                              {payment.note && <p>{payment.note}</p>}
+                            </li>)}</ul>
+                          </details>}
+                        </td>
                         <td data-label="Amount" style={{ fontWeight: 700, color: 'var(--text)' }}>
                           <div className="expense-amount-cell">
                             <div className="expense-amount-details">

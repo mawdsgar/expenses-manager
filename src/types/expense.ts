@@ -1,8 +1,16 @@
+export interface ExpensePayment {
+  id: string;
+  amount: number;
+  date: string;
+  note: string;
+}
+
 export interface Expense {
   id: string;
   payee: string;
   amount: number;
   paidAmount: number;
+  payments?: ExpensePayment[];
   dueDate: string;
   frequency: Frequency;
   intervalCount?: number;

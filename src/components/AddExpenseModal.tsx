@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { CalendarDays, Check, Plus, X } from 'lucide-react';
-import type { Expense, Frequency } from '../types/expense';
-import { categories, frequencies } from '../types/expense';
+import type { Expense, ExpensePayment, Frequency } from '../types/expense';
+import { categories, frequencies, getExpensePaidAmount } from '../types/expense';
 
 interface AddExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (expense: Omit<Expense, 'id'>) => void;
+  onAdd: (expense: Omit<Expense, 'id'>) => void | Promise<void>;
   accounts: string[];
   onAddAccount: (account: string) => void;
   editingExpense?: Expense;
-  onEdit?: (expense: Expense) => void;
+  onEdit?: (expense: Expense) => void | Promise<void>;
 }
 
 export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClose, onAdd, accounts, onAddAccount, editingExpense, onEdit }) => {
   const [payee, setPayee] = useState('');
   const [amount, setAmount] = useState('');
-  const [paidAmount, setPaidAmount] = useState('0');
+  const [payments, setPayments] = useState<ExpensePayment[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [frequency, setFrequency] = useState<Frequency>('Monthly');
   const [intervalCount, setIntervalCount] = useState(6);
@@ -48,7 +50,10 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
     if (editingExpense) {
       setPayee(editingExpense.payee);
       setAmount(editingExpense.amount.toString());
-      setPaidAmount((editingExpense.paidAmount ?? (editingExpense.paid ? editingExpense.amount : 0)).toString());
+      const entries = editingExpense.payments ?? [];
+      const unrecorded = Math.round((getExpensePaidAmount(editingExpense) - entries.reduce((sum, entry) => sum + entry.amount, 0)) * 100) / 100;
+      setPayments(unrecorded > 0 ? [...entries, { id: crypto.randomUUID(), amount: unrecorded, date: '', note: '' }] : entries);
+      setSaveError('');
       setDueDate(editingExpense.dueDate);
       setFrequency(editingExpense.frequency);
       setIntervalCount(editingExpense.intervalCount ?? 6);
@@ -59,7 +64,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
       // Reset form when not editing
       setPayee('');
       setAmount('');
-      setPaidAmount('0');
+      setPayments([]);
+      setSaveError('');
       setDueDate(new Date().toISOString().split('T')[0]);
       setFrequency('Monthly');
       setAccount(accounts[0] || '');
@@ -69,60 +75,72 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
     }
   }, [editingExpense, accounts]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!payee || !amount) return;
 
     const totalAmount = parseFloat(amount);
-    const recordedPaidAmount = Math.min(
-      Math.max(parseFloat(paidAmount) || 0, 0),
-      totalAmount,
-    );
-    const isPaidInFull = totalAmount > 0 && recordedPaidAmount >= totalAmount;
-
-    if (editingExpense && onEdit) {
-      // Edit mode
-      onEdit({
-        ...editingExpense,
-        payee,
-        amount: totalAmount,
-        paidAmount: recordedPaidAmount,
-        paid: isPaidInFull,
-        dueDate,
-        frequency,
-        intervalCount,
-        intervalUnit,
-        account,
-        category,
-      });
-    } else {
-      // Add mode
-      onAdd({
-        payee,
-        amount: totalAmount,
-        paidAmount: recordedPaidAmount,
-        dueDate,
-        frequency,
-        intervalCount,
-        intervalUnit,
-        account,
-        category,
-        paid: isPaidInFull,
-      });
+    const recordedPaidAmount = Math.round(payments.reduce((sum, payment) => sum + payment.amount, 0) * 100) / 100;
+    if (recordedPaidAmount > totalAmount) {
+      setSaveError('Payments cannot exceed the total expense amount.');
+      return;
     }
+    setSaving(true);
+    setSaveError('');
+    try {
+      const isPaidInFull = totalAmount > 0 && recordedPaidAmount >= totalAmount;
 
-    // Reset form
-    setPayee('');
-    setAmount('');
-    setPaidAmount('0');
-    setDueDate(new Date().toISOString().split('T')[0]);
-    setFrequency('Monthly');
-    setAccount(accounts[0] || '');
-    setCategory(categories[0]);
-    setShowAccountInput(false);
-    setNewAccountName('');
-    onClose();
+      if (editingExpense && onEdit) {
+        // Edit mode
+        await onEdit({
+          ...editingExpense,
+          payee,
+          amount: totalAmount,
+          paidAmount: recordedPaidAmount,
+          payments: payments.map(payment => ({ ...payment, note: payment.note.trim() })),
+          paid: isPaidInFull,
+          dueDate,
+          frequency,
+          intervalCount,
+          intervalUnit,
+          account,
+          category,
+        });
+      } else {
+        // Add mode
+        await onAdd({
+          payee,
+          amount: totalAmount,
+          paidAmount: recordedPaidAmount,
+          payments: payments.map(payment => ({ ...payment, note: payment.note.trim() })),
+          dueDate,
+          frequency,
+          intervalCount,
+          intervalUnit,
+          account,
+          category,
+          paid: isPaidInFull,
+        });
+      }
+
+      // Reset form
+      setPayee('');
+      setAmount('');
+      setPayments([]);
+      setSaveError('');
+      setDueDate(new Date().toISOString().split('T')[0]);
+      setFrequency('Monthly');
+      setAccount(accounts[0] || '');
+      setCategory(categories[0]);
+      setShowAccountInput(false);
+      setNewAccountName('');
+      onClose();
+    } catch {
+      setSaveError('Could not save this expense. Your payment details are still here; please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAddAccount = () => {
@@ -149,7 +167,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
   if (!isOpen) return null;
 
   const totalAmount = parseFloat(amount) || 0;
-  const recordedPaidAmount = Math.min(Math.max(parseFloat(paidAmount) || 0, 0), totalAmount);
+  const recordedPaidAmount = Math.round(payments.reduce((sum, payment) => sum + payment.amount, 0) * 100) / 100;
   const remainingAmount = Math.max(totalAmount - recordedPaidAmount, 0);
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-GB', {
     style: 'currency',
@@ -205,34 +223,37 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div className="form-group payment-fields">
-            <label className="form-label" htmlFor="paidAmount">Paid so far</label>
-            <div className="payment-input-row">
-              <div className="input-with-icon">
-                <span className="input-icon">£</span>
-                <input
-                  id="paidAmount"
-                  type="number"
-                  className="form-input"
-                  value={paidAmount}
-                  onChange={(e) => setPaidAmount(e.target.value)}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  max={totalAmount || undefined}
-                  style={{ paddingLeft: '2.5rem' }}
-                  aria-describedby="payment-help"
-                />
-              </div>
-              <div className="payment-remaining">
-                <span>Remaining</span>
-                <strong>{formatCurrency(remainingAmount)}</strong>
-              </div>
+          <section className="form-group payment-fields" aria-label="Part-payments">
+            <div className="payment-totals">
+              <div><span>Paid so far</span><strong>{formatCurrency(recordedPaidAmount)}</strong></div>
+              <div><span>Remaining</span><strong>{formatCurrency(remainingAmount)}</strong></div>
             </div>
-            <p className="form-hint" id="payment-help">
-              This payment is recorded against the total expense of {formatCurrency(totalAmount)}.
-            </p>
-          </div>
+            {payments.map((payment, index) => (
+              <fieldset className="payment-entry" key={payment.id}>
+                <legend>Payment {index + 1}</legend>
+                <div className="payment-entry-fields">
+                  <label className="form-label">Amount (£)
+                    <input className="form-input" type="number" min="0.01" step="0.01" required
+                      value={payment.amount || ''} onChange={e => setPayments(current => current.map(p => p.id === payment.id ? { ...p, amount: Number(e.target.value) } : p))} />
+                  </label>
+                  <label className="form-label">Payment date
+                    <input className="form-input" type="date" value={payment.date}
+                      onChange={e => setPayments(current => current.map(p => p.id === payment.id ? { ...p, date: e.target.value } : p))} />
+                  </label>
+                </div>
+                {!payment.date && <p className="form-hint">No date recorded. Add one when known.</p>}
+                <label className="form-label">Note (optional)
+                  <textarea className="form-input" rows={2} value={payment.note} placeholder="e.g. Deposit paid by bank transfer"
+                    onChange={e => setPayments(current => current.map(p => p.id === payment.id ? { ...p, note: e.target.value } : p))} />
+                </label>
+                <button type="button" className="btn-secondary" onClick={() => setPayments(current => current.filter(p => p.id !== payment.id))}>Remove payment {index + 1}</button>
+              </fieldset>
+            ))}
+            <button type="button" className="btn-secondary" onClick={() => setPayments(current => [...current, {
+              id: crypto.randomUUID(), amount: 0, date: new Date().toLocaleDateString('en-CA'), note: '',
+            }])}><Plus size={16} /> Add part-payment</button>
+            <p className="form-hint">Record each payment with its date and note. Payments apply to the current expense cycle.</p>
+          </section>
 
           <div className="form-group">
             <label className="form-label">Next Due Date</label>
@@ -332,12 +353,13 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
             )}
           </div>
 
+          {saveError && <p role="alert" className="payment-error">{saveError}</p>}
           <div className="modal-footer">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              {editingExpense ? 'Save' : 'Add Expense'}
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? 'Saving…' : editingExpense ? 'Save' : 'Add Expense'}
             </button>
           </div>
         </form>

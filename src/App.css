@@ -4345,3 +4345,19 @@ button {
     align-self: stretch;
   }
 }
+
+.payment-totals { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.payment-totals > div { display: grid; gap: 4px; }
+.payment-entry { min-width: 0; margin: 12px 0; padding: 14px; border: 1px solid var(--border-color, #dbe2ea); border-radius: 10px; }
+.payment-entry legend { padding: 0 6px; font-weight: 600; }
+.payment-entry-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.payment-entry .form-label { display: grid; gap: 6px; margin-bottom: 12px; }
+.payment-entry textarea { resize: vertical; font: inherit; }
+.payment-error { color: #b42318; }
+@media (max-width: 480px) { .payment-entry-fields { grid-template-columns: 1fr; } }
+
+.expense-payment-details { margin-top: 6px; font-size: 12px; font-weight: 400; }
+.expense-payment-details summary { cursor: pointer; color: var(--text-secondary); }
+.expense-payment-details ul { padding-left: 16px; }
+.expense-payment-details li { margin: 8px 0; }
+.expense-payment-details p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 4px 0; }
