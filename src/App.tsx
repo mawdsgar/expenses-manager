@@ -11,6 +11,7 @@ import { AddIncomeModal } from './components/AddIncomeModal';
 import { AddSavingsModal } from './components/AddSavingsModal';
 import { RenovationPlanner } from './features/renovation/RenovationPlanner';
 import { addMonthsClamped, formatPayDate, getAdjustedPayDate, loadEnglandWalesBankHolidays, toDateKey } from './utils/payday';
+import { advanceExpenseDueDate } from './utils/expenseSchedule';
 import {
   AlertTriangle,
   CalendarDays,
@@ -73,8 +74,7 @@ function App() {
   const [showSavingsModal, setShowSavingsModal] = useState(false);
   const [showNewCycleConfirm, setShowNewCycleConfirm] = useState(false);
   const [allowancePaymentsRevision, setAllowancePaymentsRevision] = useState(0);
-  const [allowancePeriodView, setAllowancePeriodView] = useState<'current' | 'following'>('current');
-  const [expensePeriodView, setExpensePeriodView] = useState<'current' | 'following' | 'all'>('current');
+  const [expensePeriodView, setExpensePeriodView] = useState<'current' | 'all'>('current');
   const [showDeleteExpenseConfirm, setShowDeleteExpenseConfirm] = useState(false);
   const [expenseIdPendingDelete, setExpenseIdPendingDelete] = useState<string | null>(null);
   const [editingSavings, setEditingSavings] = useState<SavingsAccount | undefined>(undefined);
@@ -847,18 +847,24 @@ function App() {
       
       // Restore to Supabase if enabled
       if (supabaseEnabled) {
-        for (const expense of undoExpenses) {
-          const { error } = await supabase
-            .from('expenses')
-            .update({
-              paid: expense.paid,
-              paid_amount: expense.paidAmount,
-              payments: expense.payments ?? [],
-              due_date: expense.dueDate,
-            })
-            .eq('id', expense.id);
-          if (error) console.error('Failed to undo expense in Supabase:', error.message);
-        }
+        const { error } = await supabase.from('expenses').upsert(
+          undoExpenses.map(expense => ({
+            id: expense.id,
+            payee: expense.payee,
+            amount: expense.amount,
+            paid_amount: expense.paidAmount,
+            payments: expense.payments ?? [],
+            due_date: expense.dueDate,
+            frequency: expense.frequency,
+            interval_count: expense.frequency === 'Custom' ? expense.intervalCount : null,
+            interval_unit: expense.frequency === 'Custom' ? expense.intervalUnit : null,
+            category: expense.category,
+            paid: expense.paid,
+            account: expense.account,
+          })),
+          { onConflict: 'id' },
+        );
+        if (error) console.error('Failed to undo expense cycle in Supabase:', error.message);
       }
 
       setUndoExpenses(null);
@@ -880,31 +886,17 @@ function App() {
     // Store current state for undo
     setUndoExpenses([...expenses]);
 
-    // Only paid expenses complete their current schedule and move forward.
-    const updatedExpenses = expenses.map(expense => {
-      if (!expense.paid) return expense;
-      if (expense.frequency === 'One-time') return { ...expense, paid: false, paidAmount: 0, payments: [] };
-      const currentDueDate = new Date(`${expense.dueDate}T00:00:00`);
-      let newDueDate = new Date(currentDueDate);
-
-      // Increment based on frequency
-      if (expense.frequency === 'Monthly') {
-        newDueDate.setMonth(newDueDate.getMonth() + 1);
-      } else if (expense.frequency === 'Weekly') {
-        newDueDate.setDate(newDueDate.getDate() + 7);
-      } else if (expense.frequency === 'Yearly') {
-        newDueDate.setFullYear(newDueDate.getFullYear() + 1);
-      } else if (expense.frequency === 'Custom') {
-        if (expense.intervalUnit === 'Weeks') newDueDate.setDate(newDueDate.getDate() + 7 * (expense.intervalCount || 1));
-        else newDueDate.setMonth(newDueDate.getMonth() + (expense.intervalCount || 1));
-      }
-
+    // A completed one-time expense has no next occurrence, so remove it from the plan.
+    const completedOneTimeExpenses = expenses.filter(expense => expense.frequency === 'One-time' && expense.paid);
+    const updatedExpenses = expenses
+      .filter(expense => !(expense.frequency === 'One-time' && expense.paid))
+      .map(expense => {
       return {
         ...expense,
         paid: false,
         paidAmount: 0,
         payments: [],
-        dueDate: toDateKey(newDueDate)
+        dueDate: advanceExpenseDueDate(expense),
       };
     });
 
@@ -912,9 +904,14 @@ function App() {
 
     // Persist to Supabase if enabled
     if (supabaseEnabled) {
+      if (completedOneTimeExpenses.length > 0) {
+        const { error } = await supabase
+          .from('expenses')
+          .delete()
+          .in('id', completedOneTimeExpenses.map(expense => expense.id));
+        if (error) console.error('Failed to remove completed one-time expenses:', error.message);
+      }
       for (const expense of updatedExpenses) {
-        const previousExpense = expenses.find((item) => item.id === expense.id);
-        if (!previousExpense?.paid) continue;
         const { error } = await supabase
           .from('expenses')
           .update({
@@ -973,9 +970,6 @@ function App() {
     while (getAdjustedPayDate(toDateKey(scheduledNextPayday), primaryIncome.isSalary, bankHolidayDates) < today) {
       scheduledNextPayday = addMonthsClamped(scheduledNextPayday, 1);
     }
-    if (allowancePeriodView === 'following') {
-      scheduledNextPayday = addMonthsClamped(scheduledNextPayday, 1);
-    }
     const nextPayday = getAdjustedPayDate(toDateKey(scheduledNextPayday), primaryIncome.isSalary, bankHolidayDates);
     const cycleStart = getAdjustedPayDate(toDateKey(addMonthsClamped(scheduledNextPayday, -1)), primaryIncome.isSalary, bankHolidayDates);
     const cycleDays = Math.round((nextPayday.getTime() - cycleStart.getTime()) / 86400000);
@@ -1009,9 +1003,7 @@ function App() {
     end.setHours(0, 0, 0, 0);
     return { start, end };
   })();
-  const displayedPayPeriod = payPeriod && expensePeriodView !== 'all' && expensePeriodView === 'following'
-    ? { start: payPeriod.end, end: addMonthsClamped(payPeriod.end, 1) }
-    : expensePeriodView === 'all' ? null : payPeriod;
+  const displayedPayPeriod = expensePeriodView === 'all' ? null : payPeriod;
   const expensesInPayPeriod = displayedPayPeriod
     ? expenses.filter(expense => {
         const due = new Date(`${expense.dueDate}T00:00:00`);
@@ -1533,11 +1525,7 @@ function App() {
                   {allowancesExpanded && (
                     <div className="expense-section-content">
                       <div className="allowance-pay-month">
-                        <strong>Pay month</strong>
-                        <div className="weekly-allowance-period" role="group" aria-label="Allowances pay month">
-                          <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'current'} onClick={() => setAllowancePeriodView('current')}>Current pay month</button>
-                          <button type="button" className="btn-control" aria-pressed={allowancePeriodView === 'following'} onClick={() => setAllowancePeriodView('following')}>Following pay month</button>
-                        </div>
+                        <strong>Current pay month</strong>
                         {weeklyAllowanceSchedule.length > 0 && <span>{formatPayDate(weeklyAllowanceSchedule[0].start)} – {formatPayDate(weeklyAllowanceSchedule[weeklyAllowanceSchedule.length - 1].end)}</span>}
                       </div>
                       <section className="allowance-group personal-allowances-group">
@@ -1952,7 +1940,6 @@ function App() {
               <div className="table-controls">
                 <div className="expense-period-controls" role="group" aria-label="Expense pay month view">
                   <button className="btn-control" onClick={() => { setExpensePeriodView('current'); setFromDate(''); setToDate(''); }} aria-pressed={expensePeriodView === 'current'}>Current pay month</button>
-                  <button className="btn-control" onClick={() => { setExpensePeriodView('following'); setFromDate(''); setToDate(''); }} aria-pressed={expensePeriodView === 'following'}>Following pay month</button>
                   <button className="btn-control" onClick={() => { setExpensePeriodView('all'); setFromDate(''); setToDate(''); }} aria-pressed={expensePeriodView === 'all'}>All expenses</button>
                 </div>
                 <button className="btn-control" onClick={exportToExcel}><Download size={15} /> Export</button>
@@ -2206,7 +2193,7 @@ function App() {
             <div className="confirm-icon"><RotateCcw size={22} /></div>
             <h2 className="confirm-title">Start New Cycle?</h2>
             <p className="confirm-message">
-              This will mark all expenses as <strong>unpaid</strong> and increment their due dates based on frequency.
+              This will mark expenses as <strong>unpaid</strong> and advance recurring due dates. Paid one-time expenses will be removed.
             </p>
             <div className="confirm-warning">
               <span className="warning-icon"><AlertTriangle size={16} /></span>
